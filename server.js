@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const session = require('express-session');
 const Anthropic = require('@anthropic-ai/sdk');
 const fs = require('fs');
 const path = require('path');
@@ -7,6 +8,41 @@ const https = require('https');
 
 const app = express();
 app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: false }));
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'ciotr-secret-key',
+  resave: false,
+  saveUninitialized: false,
+  cookie: { maxAge: 7 * 24 * 60 * 60 * 1000 },
+}));
+
+const APP_PASSWORD = process.env.APP_PASSWORD || 'GameChanger45!';
+
+app.get('/login', (req, res) => {
+  if (req.session.authed) return res.redirect('/');
+  const error = req.query.error ? '<p style="color:#f87171;margin:0 0 16px">Incorrect password.</p>' : '';
+  res.send(`<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CIOTR CMS — Login</title><style>*{box-sizing:border-box;margin:0;padding:0}body{background:#0f1117;color:#f0f2f8;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh}.card{background:#181c27;border:1px solid #2d3348;border-radius:16px;padding:40px;width:100%;max-width:380px;box-shadow:0 24px 64px rgba(0,0,0,.6)}.logo{font-size:32px;margin-bottom:16px}.title{font-size:20px;font-weight:700;margin-bottom:4px}.sub{font-size:13px;color:#6b7599;margin-bottom:28px}input{width:100%;height:44px;background:#1e2233;border:1px solid #374060;border-radius:8px;padding:0 14px;color:#f0f2f8;font-size:14px;margin-bottom:16px;outline:none}input:focus{border-color:#4f8ef7;box-shadow:0 0 0 3px rgba(79,142,247,.15)}button{width:100%;height:44px;background:#4f8ef7;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer}button:hover{background:#6ba3fa}</style></head><body><div class="card"><div class="logo">❄️</div><div class="title">CIOTR CMS Automation</div><div class="sub">Cold Is On the Right · Location Page Generator</div>${error}<form method="POST" action="/login"><input type="password" name="password" placeholder="Password" autofocus><button type="submit">Sign In</button></form></div></body></html>`);
+});
+
+app.post('/login', (req, res) => {
+  if (req.body.password === APP_PASSWORD) {
+    req.session.authed = true;
+    res.redirect('/');
+  } else {
+    res.redirect('/login?error=1');
+  }
+});
+
+app.get('/logout', (req, res) => {
+  req.session.destroy(() => res.redirect('/login'));
+});
+
+function requireAuth(req, res, next) {
+  if (req.session.authed) return next();
+  res.redirect('/login');
+}
+
+app.use(requireAuth);
 app.use(express.static(path.join(__dirname, 'public')));
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
