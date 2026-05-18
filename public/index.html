@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CIOTR CMS Automation</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+
+    <!-- Header -->
+    <header class="header">
+      <div class="header-inner">
+        <div class="header-brand">
+          <div class="header-logo">❄️</div>
+          <div>
+            <div class="header-title">CIOTR CMS Automation</div>
+            <div class="header-sub">Cold Is On the Right · Location Page Generator</div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Controls -->
+    <div class="controls-bar">
+      <div class="controls-inner">
+        <div class="control-group">
+          <label for="location-select">Location</label>
+          <select id="location-select">
+            <option value="">Select location…</option>
+          </select>
+        </div>
+        <div class="control-group">
+          <label for="pagetype-select">Page Type</label>
+          <select id="pagetype-select">
+            <option value="">Select page type…</option>
+          </select>
+        </div>
+        <div class="control-group control-group--action">
+          <label>&nbsp;</label>
+          <button id="generate-btn" class="btn btn--primary" disabled>
+            <span class="btn-icon">✦</span> Generate
+          </button>
+          <button id="batch-btn" class="btn btn--secondary" disabled>
+            ⊞ All Pages
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main content area -->
+    <main class="main">
+
+      <!-- Empty state -->
+      <div id="empty-state" class="empty-state">
+        <div class="empty-icon">📄</div>
+        <div class="empty-title">Select a location and page type to get started</div>
+        <div class="empty-sub">Generate a single page, or use <strong>All Pages</strong> to batch-generate every service page for a location at once.</div>
+      </div>
+
+      <!-- Loading state -->
+      <div id="loading-state" class="loading-state hidden">
+        <div class="spinner"></div>
+        <div class="loading-title">Generating content…</div>
+        <div class="loading-sub" id="loading-sub">Calling Claude API</div>
+      </div>
+
+      <!-- Preview panel (single mode) -->
+      <div id="preview-panel" class="preview-panel hidden">
+
+        <div class="preview-header">
+          <div class="preview-header-left">
+            <div class="preview-title" id="preview-title">—</div>
+            <div class="preview-badge" id="preview-badge"></div>
+          </div>
+          <div class="preview-actions">
+            <button id="regenerate-btn" class="btn btn--secondary">↺ Regenerate</button>
+            <button id="push-btn" class="btn btn--success">✓ Approve &amp; Push to Webflow</button>
+          </div>
+        </div>
+
+        <div id="existing-warning" class="existing-warning hidden">
+          ⚠ This page type already exists in the current Webflow collection. Pushing will create a duplicate.
+        </div>
+
+        <div class="field-sections" id="field-sections"></div>
+
+      </div>
+
+      <!-- Batch panel -->
+      <div id="batch-panel" class="batch-panel hidden">
+
+        <div class="batch-header">
+          <div class="batch-header-left">
+            <div class="batch-title" id="batch-title">Generating…</div>
+            <div class="batch-progress-row">
+              <div class="batch-progress-bar">
+                <div class="batch-progress-fill" id="batch-progress-fill" style="width:0%"></div>
+              </div>
+              <div class="batch-progress-text" id="batch-progress-text">0 / 0</div>
+            </div>
+          </div>
+          <div class="batch-header-right">
+            <button id="batch-push-all-btn" class="btn btn--success hidden">↑ Push All Ready</button>
+          </div>
+        </div>
+
+        <div class="batch-body">
+          <div class="batch-sidebar" id="batch-sidebar"></div>
+          <div class="batch-content" id="batch-content">
+            <div class="batch-placeholder">
+              <div class="empty-icon">←</div>
+              <div class="empty-title">Select a page from the list to preview</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Success state -->
+      <div id="success-state" class="success-state hidden">
+        <div class="success-icon">✓</div>
+        <div class="success-title">Pushed to Webflow as Draft</div>
+        <div class="success-sub" id="success-sub"></div>
+        <div class="success-actions">
+          <a id="webflow-link" href="#" target="_blank" class="btn btn--primary">View in Webflow CMS ↗</a>
+          <button id="generate-another-btn" class="btn btn--secondary">Generate Another Page</button>
+        </div>
+      </div>
+
+    </main>
+
+  </div>
+
+  <!-- Push confirmation modal -->
+  <div id="push-modal" class="modal-overlay hidden">
+    <div class="modal">
+      <div class="modal-title">Push to Webflow?</div>
+      <div class="modal-body" id="modal-body">This will create a draft item in your Webflow CMS collection. It will not be published automatically.</div>
+      <div class="modal-actions">
+        <button id="modal-cancel" class="btn btn--secondary">Cancel</button>
+        <button id="modal-confirm" class="btn btn--success">Push as Draft</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

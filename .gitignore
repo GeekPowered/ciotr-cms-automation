@@ -1,0 +1,12 @@
+# Dependencies
+node_modules/
+
+# Environment variables — never commit these
+.env
+
+# Generated reference pages (large, machine-generated, not source code)
+reference-pages/
+
+# Scrapers / one-off scripts (optional — remove these lines if you want them in the repo)
+scrape-images.js
+scrape-references.js

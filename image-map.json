@@ -1,0 +1,199 @@
+{
+  "plumbing": {
+    "hero": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68a8b47f879733139b03363e_plumbing-pipe-repair.webp",
+    "signs": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b219bcd324e88191cb036f_signs-plumbing.webp",
+    "benefits": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b219b8faf96fe7f8587c0a_benefits-plumbing.webp"
+  },
+  "plumbing-repairs": {
+    "hero": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68a8b47f879733139b03363e_plumbing-pipe-repair.webp",
+    "signs": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b219bcd324e88191cb036f_signs-plumbing.webp",
+    "benefits": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b2222d625f2ad51e9b4814_benefits-whole-house.webp"
+  },
+  "commercial-plumbing": {
+    "hero": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68a8b3ae957ad2ca0a191329_70ea2103db7113fe9e7e67c38f40ece0_gallery-2.webp",
+    "signs": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b21c38833bd5dcd7ba6290_signs-emergency-plumbing.webp",
+    "benefits": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b219b8faf96fe7f8587c0a_benefits-plumbing.webp"
+  },
+  "drain": {
+    "hero": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68a8b3ae957ad2ca0a191329_70ea2103db7113fe9e7e67c38f40ece0_gallery-2.webp",
+    "signs": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b219bcd324e88191cb036f_signs-plumbing.webp",
+    "benefits": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b21c460de6aaede36bc3db_benefits-emergency-plumbing.webp"
+  },
+  "sewer": {
+    "hero": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68ac77bb26250214bf46cb25_f7cf7c8a9b45e9d6b214c5d9d38c779b_gallery-12.webp",
+    "signs": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b219bcd324e88191cb036f_signs-plumbing.webp",
+    "benefits": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b219b8faf96fe7f8587c0a_benefits-plumbing.webp"
+  },
+  "emergency-plumbing": {
+    "hero": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68a8b3ae957ad2ca0a191329_70ea2103db7113fe9e7e67c38f40ece0_gallery-2.webp",
+    "signs": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b21c38833bd5dcd7ba6290_signs-emergency-plumbing.webp",
+    "benefits": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b21c460de6aaede36bc3db_benefits-emergency-plumbing.webp"
+  },
+  "whole-house-repiping": {
+    "hero": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b2210a2797cdb794298439_flame-crafting-pipes.webp",
+    "signs": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b219bcd324e88191cb036f_signs-plumbing.webp",
+    "benefits": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b2222d625f2ad51e9b4814_benefits-whole-house.webp"
+  },
+  "leak-detection": {
+    "hero": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68e9797fa5ec19a80baababd_thermal-camera.webp",
+    "signs": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b219bcd324e88191cb036f_signs-plumbing.webp",
+    "benefits": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b219b8faf96fe7f8587c0a_benefits-plumbing.webp"
+  },
+  "water-softeners": {
+    "hero": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b21e38b0ea3f82a6a2ff14_water-softeners.webp",
+    "signs": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b219bcd324e88191cb036f_signs-plumbing.webp",
+    "benefits": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b21f7d843bd618d5717276_48e559f9b5dd343cee2975d85a3ab843_benefits-water-softener.webp"
+  },
+  "garbage-disposal-services": {
+    "hero": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/690d210765e748c1460ec398_Garbage%20Disposal.webp",
+    "signs": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b219bcd324e88191cb036f_signs-plumbing.webp",
+    "benefits": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b219b8faf96fe7f8587c0a_benefits-plumbing.webp"
+  },
+  "gas-line-installation": {
+    "hero": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/69e2455f78687f441d852455_Images-1%20(54).webp",
+    "signs": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b219bcd324e88191cb036f_signs-plumbing.webp",
+    "benefits": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b219b8faf96fe7f8587c0a_benefits-plumbing.webp"
+  },
+  "water-heaters": {
+    "hero": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b222bc18366b6467d14cdb_water-heater-install.webp",
+    "signs": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b219bcd324e88191cb036f_signs-plumbing.webp",
+    "benefits": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b219b8faf96fe7f8587c0a_benefits-plumbing.webp"
+  },
+  "tankless-water-heater-installation": {
+    "hero": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/690d175344987890b78052f4_Tankless%20Water%20Heater%20Installation.webp",
+    "signs": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b219bcd324e88191cb036f_signs-plumbing.webp",
+    "benefits": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b219b8faf96fe7f8587c0a_benefits-plumbing.webp"
+  },
+  "hvac": {
+    "hero": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68a8b5ad0ddbe38f62898666_92e0ab06cf74e7165210c8530d14cf36_hvac-technicians.webp",
+    "signs": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b2141e96047356c9e49197_signs-hvac.webp",
+    "benefits": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b2141e15971c78973439ec_benefits-hvac.webp"
+  },
+  "hvac-maintenance": {
+    "hero": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68a8b5ad0ddbe38f62898666_92e0ab06cf74e7165210c8530d14cf36_hvac-technicians.webp",
+    "signs": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b2141e96047356c9e49197_signs-hvac.webp",
+    "benefits": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b2141e15971c78973439ec_benefits-hvac.webp",
+    "_source": "hvac"
+  },
+  "hvac-repair": {
+    "hero": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68a8b5ad0ddbe38f62898666_92e0ab06cf74e7165210c8530d14cf36_hvac-technicians.webp",
+    "signs": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b2141e96047356c9e49197_signs-hvac.webp",
+    "benefits": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b2141e15971c78973439ec_benefits-hvac.webp",
+    "_source": "hvac"
+  },
+  "hvac-replacement": {
+    "hero": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68a8b5ad0ddbe38f62898666_92e0ab06cf74e7165210c8530d14cf36_hvac-technicians.webp",
+    "signs": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b2141e96047356c9e49197_signs-hvac.webp",
+    "benefits": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b2141e15971c78973439ec_benefits-hvac.webp",
+    "_source": "hvac"
+  },
+  "ac-repair": {
+    "hero": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68a8b5ad0ddbe38f62898666_92e0ab06cf74e7165210c8530d14cf36_hvac-technicians.webp",
+    "signs": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b2141e96047356c9e49197_signs-hvac.webp",
+    "benefits": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b2141e15971c78973439ec_benefits-hvac.webp"
+  },
+  "ac-installation": {
+    "hero": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/69a1f4313e327b730026ff1f_hvac-technicians-2.webp",
+    "signs": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b2141e96047356c9e49197_signs-hvac.webp",
+    "benefits": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b2141e15971c78973439ec_benefits-hvac.webp"
+  },
+  "ac-replacement": {
+    "hero": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68a8b5ad0ddbe38f62898666_92e0ab06cf74e7165210c8530d14cf36_hvac-technicians.webp",
+    "signs": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b2141e96047356c9e49197_signs-hvac.webp",
+    "benefits": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b2141e15971c78973439ec_benefits-hvac.webp"
+  },
+  "commercial-ac-repair": {
+    "hero": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68a8b5ad0ddbe38f62898666_92e0ab06cf74e7165210c8530d14cf36_hvac-technicians.webp",
+    "signs": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b2141e96047356c9e49197_signs-hvac.webp",
+    "benefits": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b2141e15971c78973439ec_benefits-hvac.webp",
+    "_source": "ac-repair"
+  },
+  "mini-splits": {
+    "hero": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68a8b5ad0ddbe38f62898666_92e0ab06cf74e7165210c8530d14cf36_hvac-technicians.webp",
+    "signs": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b2141e96047356c9e49197_signs-hvac.webp",
+    "benefits": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b2141e15971c78973439ec_benefits-hvac.webp",
+    "_source": "hvac"
+  },
+  "heat-pump-installation": {
+    "hero": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68a8b3ae957ad2ca0a191329_70ea2103db7113fe9e7e67c38f40ece0_gallery-2.webp",
+    "signs": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b2141e96047356c9e49197_signs-hvac.webp",
+    "benefits": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b2141e15971c78973439ec_benefits-hvac.webp"
+  },
+  "heat-pump-repair": {
+    "hero": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68a8b3ae957ad2ca0a191329_70ea2103db7113fe9e7e67c38f40ece0_gallery-2.webp",
+    "signs": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b2141e96047356c9e49197_signs-hvac.webp",
+    "benefits": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b2141e15971c78973439ec_benefits-hvac.webp",
+    "_source": "heat-pump-installation"
+  },
+  "heat-pump-replacement": {
+    "hero": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68a8b3ae957ad2ca0a191329_70ea2103db7113fe9e7e67c38f40ece0_gallery-2.webp",
+    "signs": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b2141e96047356c9e49197_signs-hvac.webp",
+    "benefits": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b2141e15971c78973439ec_benefits-hvac.webp",
+    "_source": "heat-pump-installation"
+  },
+  "furnace-repair": {
+    "hero": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/693c805163380d44f54a7e0f_cold-is-on-the-right-furnace-repair-01.webp",
+    "signs": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b2141e96047356c9e49197_signs-hvac.webp",
+    "benefits": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b2141e15971c78973439ec_benefits-hvac.webp"
+  },
+  "furnace-replacement": {
+    "hero": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/693c805163380d44f54a7e0f_cold-is-on-the-right-furnace-repair-01.webp",
+    "signs": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b2141e96047356c9e49197_signs-hvac.webp",
+    "benefits": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b2141e15971c78973439ec_benefits-hvac.webp",
+    "_source": "furnace-repair"
+  },
+  "furnace-installation": {
+    "hero": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/693c805163380d44f54a7e0f_cold-is-on-the-right-furnace-repair-01.webp",
+    "signs": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b2141e96047356c9e49197_signs-hvac.webp",
+    "benefits": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b2141e15971c78973439ec_benefits-hvac.webp",
+    "_source": "furnace-repair"
+  },
+  "heating-repairs": {
+    "hero": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68a8b5ad0ddbe38f62898666_92e0ab06cf74e7165210c8530d14cf36_hvac-technicians.webp",
+    "signs": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b2141e96047356c9e49197_signs-hvac.webp",
+    "benefits": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b2141e15971c78973439ec_benefits-hvac.webp",
+    "_source": "hvac"
+  },
+  "drain-cleaning": {
+    "hero": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68a8b3ae957ad2ca0a191329_70ea2103db7113fe9e7e67c38f40ece0_gallery-2.webp",
+    "signs": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b219bcd324e88191cb036f_signs-plumbing.webp",
+    "benefits": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b21c460de6aaede36bc3db_benefits-emergency-plumbing.webp",
+    "_source": "drain"
+  },
+  "sewer-line-replacement": {
+    "hero": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68ac77bb26250214bf46cb25_f7cf7c8a9b45e9d6b214c5d9d38c779b_gallery-12.webp",
+    "signs": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b219bcd324e88191cb036f_signs-plumbing.webp",
+    "benefits": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b219b8faf96fe7f8587c0a_benefits-plumbing.webp",
+    "_source": "sewer"
+  },
+  "slab-leak-detection": {
+    "hero": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68e9797fa5ec19a80baababd_thermal-camera.webp",
+    "signs": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b219bcd324e88191cb036f_signs-plumbing.webp",
+    "benefits": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b219b8faf96fe7f8587c0a_benefits-plumbing.webp",
+    "_source": "leak-detection"
+  },
+  "water-filters": {
+    "hero": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b21e38b0ea3f82a6a2ff14_water-softeners.webp",
+    "signs": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b219bcd324e88191cb036f_signs-plumbing.webp",
+    "benefits": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b21f7d843bd618d5717276_48e559f9b5dd343cee2975d85a3ab843_benefits-water-softener.webp",
+    "_source": "water-softeners"
+  },
+  "water-heater-installation": {
+    "hero": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b222bc18366b6467d14cdb_water-heater-install.webp",
+    "signs": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b219bcd324e88191cb036f_signs-plumbing.webp",
+    "benefits": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b219b8faf96fe7f8587c0a_benefits-plumbing.webp",
+    "_source": "water-heaters"
+  },
+  "water-heater-repair": {
+    "hero": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b222bc18366b6467d14cdb_water-heater-install.webp",
+    "signs": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b219bcd324e88191cb036f_signs-plumbing.webp",
+    "benefits": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b219b8faf96fe7f8587c0a_benefits-plumbing.webp",
+    "_source": "water-heaters"
+  },
+  "water-heater-replacement": {
+    "hero": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b222bc18366b6467d14cdb_water-heater-install.webp",
+    "signs": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b219bcd324e88191cb036f_signs-plumbing.webp",
+    "benefits": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b219b8faf96fe7f8587c0a_benefits-plumbing.webp",
+    "_source": "water-heaters"
+  }
+}
