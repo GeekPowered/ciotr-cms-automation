@@ -441,6 +441,9 @@ body {
 option.exists-in-cms {
   color: var(--green);
 }
+option.has-saved {
+  color: var(--amber);
+}
 
 .field-value--empty {
   color: var(--text-4);

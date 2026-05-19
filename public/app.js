@@ -122,6 +122,7 @@ async function boot() {
     wireEvents();
     loadExistingSlugs(); // non-blocking — updates dropdown when ready
     restoreSession();
+    markSavedDropdownOptions();
   } catch (err) {
     showError('Failed to load app config: ' + err.message);
   }
@@ -862,6 +863,28 @@ function restoreSession() {
   } catch (_) {
     localStorage.removeItem('ciotr_session');
   }
+}
+
+function markSavedDropdownOptions() {
+  try {
+    const saved = localStorage.getItem('ciotr_session');
+    if (!saved) return;
+    const data = JSON.parse(saved);
+    const ptSel = document.getElementById('pagetype-select');
+
+    const savedSlugs = new Set();
+    if (data.mode === 'single' && data.pageType) {
+      savedSlugs.add(data.pageType);
+    } else if (data.mode === 'batch' && data.pages) {
+      data.pages.filter(p => p.content).forEach(p => savedSlugs.add(p.slug));
+    }
+
+    for (const opt of ptSel.options) {
+      if (savedSlugs.has(opt.value)) {
+        opt.classList.add('has-saved');
+      }
+    }
+  } catch (_) {}
 }
 
 /* ── Init ─────────────────────────────────────────────────── */
