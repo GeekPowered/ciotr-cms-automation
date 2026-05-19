@@ -120,7 +120,7 @@ async function boot() {
     await loadFieldMeta();
 
     wireEvents();
-    loadExistingSlugs(); // non-blocking — updates dropdown when ready
+    loadExistingSlugs(null); // non-blocking — updates dropdown when ready
     restoreSession();
     markSavedDropdownOptions();
   } catch (err) {
@@ -128,15 +128,19 @@ async function boot() {
   }
 }
 
-async function loadExistingSlugs() {
+async function loadExistingSlugs(location) {
   try {
-    const res = await fetch('/api/existing-slugs');
+    const url = location ? `/api/existing-slugs?location=${encodeURIComponent(location)}` : '/api/existing-slugs';
+    const res = await fetch(url);
     const data = await res.json();
     existingSlugs = new Set(data.slugs || []);
 
     const ptSel = document.getElementById('pagetype-select');
     for (const opt of ptSel.options) {
       if (!opt.value) continue;
+      // Reset exists-in-cms state before re-applying
+      opt.classList.remove('exists-in-cms');
+      opt.textContent = opt.textContent.replace(/^✓\s*/, '');
       if (existingSlugs.has(opt.value)) {
         opt.textContent = '✓ ' + opt.textContent;
         opt.classList.add('exists-in-cms');
@@ -226,7 +230,10 @@ function wireEvents() {
     batchBtn.disabled = !locSel.value;
   }
 
-  locSel.addEventListener('change', updateButtons);
+  locSel.addEventListener('change', () => {
+    updateButtons();
+    loadExistingSlugs(locSel.value);
+  });
   ptSel.addEventListener('change', updateButtons);
 
   genBtn.addEventListener('click', () => {

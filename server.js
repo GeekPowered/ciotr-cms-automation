@@ -46,6 +46,16 @@ app.use(requireAuth);
 app.use(express.static(path.join(__dirname, 'public')));
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
+// ─── Per-location collection IDs ─────────────────────────────────────────────
+const COLLECTION_IDS = {
+  'Cedar Park': process.env.WEBFLOW_COLLECTION_ID_CEDAR_PARK,
+  'Round Rock': process.env.WEBFLOW_COLLECTION_ID_ROUND_ROCK,
+};
+
+function getCollectionId(location) {
+  return COLLECTION_IDS[location] || process.env.WEBFLOW_COLLECTION_ID;
+}
 const schema = JSON.parse(fs.readFileSync(path.join(__dirname, 'webflow-schema.json'), 'utf8'));
 const REFERENCE_DIR = path.join(__dirname, 'reference-pages');
 
@@ -302,8 +312,8 @@ function webflowRequest(method, endpoint, body) {
   });
 }
 
-async function pushToWebflow(fieldData, pageType) {
-  const collectionId = process.env.WEBFLOW_COLLECTION_ID;
+async function pushToWebflow(fieldData, pageType, location) {
+  const collectionId = getCollectionId(location);
 
   const IMAGE_FIELD_SLUGS = new Set(['hero-image', 'signs-section-image', 'benefits-section-image', 'unique-section-image']);
   const webflowFields = {};
@@ -341,8 +351,8 @@ async function pushToWebflow(fieldData, pageType) {
 
 // ─── Webflow existing items ──────────────────────────────────────────────────
 
-async function getExistingSlugs() {
-  const collectionId = process.env.WEBFLOW_COLLECTION_ID;
+async function getExistingSlugs(location) {
+  const collectionId = getCollectionId(location);
   if (!collectionId) return [];
   try {
     const result = await webflowRequest('GET', `/v2/collections/${collectionId}/items?limit=100`);
@@ -367,7 +377,7 @@ app.get('/api/config', (req, res) => {
 });
 
 app.get('/api/existing-slugs', async (req, res) => {
-  const slugs = await getExistingSlugs();
+  const slugs = await getExistingSlugs(req.query.location);
   res.json({ slugs });
 });
 
@@ -406,7 +416,7 @@ app.post('/api/push', async (req, res) => {
   if (location) content['_location'] = location;
 
   try {
-    const result = await pushToWebflow(content, pageType);
+    const result = await pushToWebflow(content, pageType, location);
 
     // Save as reference file if this page type had no reference
     if (shouldSaveReference) {
@@ -414,7 +424,7 @@ app.post('/api/push', async (req, res) => {
     }
 
     const siteId = process.env.WEBFLOW_SITE_ID;
-    const collectionId = process.env.WEBFLOW_COLLECTION_ID;
+    const collectionId = getCollectionId(location);
     const dashboardUrl = `https://webflow.com/dashboard/sites/${siteId}/cms/${collectionId}`;
 
     res.json({
