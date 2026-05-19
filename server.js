@@ -151,7 +151,7 @@ Your job is to write genuinely unique location-specific content. Do NOT just swa
 
 Phone number formatting: whenever (512) 271-2172 appears in any field, it must be a clickable tel: link: <a href="tel:5122712172">(512) 271-2172</a>
 
-Em dash usage: use em dashes (—) very sparingly. Maximum one per paragraph, and only when a comma, colon, or period would genuinely be less clear. Never use them in lists, service descriptions, or FAQ answers. If you find yourself reaching for an em dash, try restructuring the sentence instead.
+Em dash usage: use em dashes (—) sparingly — maximum 1 per entire page, only when no other punctuation works. Do not use them in hero copy, service descriptions, FAQ answers, or bullet lists. Most sentences should use commas, colons, or periods instead.
 
 You must respond with a single valid JSON object and nothing else. Do not include any explanation, commentary, or markdown formatting. Do not wrap the JSON in code blocks. Start your response with { and end with }.`;
 
@@ -257,6 +257,7 @@ async function generateContent(location, pageType) {
   // Enforce name and slug exactly
   generated['name'] = `${PAGE_TYPE_NAMES[pageType] || pageType} in ${location}, TX`;
   generated['slug'] = pageType;
+
 
   return { generated, hasReference: !!reference };
 }

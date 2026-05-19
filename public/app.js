@@ -333,7 +333,7 @@ function renderFieldSections(container, content) {
 
     populated.forEach(slug => {
       const meta = fieldMeta[slug] || { displayName: slug, type: 'PlainText' };
-      body.appendChild(buildFieldRow(slug, meta, content[slug]));
+      body.appendChild(buildFieldRow(slug, meta, content[slug], content));
     });
 
     group.appendChild(heading);
@@ -361,7 +361,7 @@ function renderPreview() {
   renderFieldSections(document.getElementById('field-sections'), currentContent);
 }
 
-function buildFieldRow(slug, meta, value) {
+function buildFieldRow(slug, meta, value, contentRef) {
   const row = document.createElement('div');
   row.className = 'field-row';
 
@@ -384,15 +384,56 @@ function buildFieldRow(slug, meta, value) {
     valueEl.textContent = '(empty)';
   } else if (meta.type === 'Image') {
     valueEl.className = 'field-value field-value--image';
+
     const img = document.createElement('img');
     img.src = value;
     img.alt = meta.displayName;
     img.className = 'field-image-preview';
-    const urlText = document.createElement('div');
+
+    const urlRow = document.createElement('div');
+    urlRow.className = 'field-image-url-row';
+
+    const urlText = document.createElement('span');
     urlText.className = 'field-image-url';
     urlText.textContent = value.split('/').pop();
+
+    const swapBtn = document.createElement('button');
+    swapBtn.className = 'btn-swap';
+    swapBtn.textContent = '↺ Swap';
+
+    urlRow.appendChild(urlText);
+    urlRow.appendChild(swapBtn);
+
+    const swapForm = document.createElement('div');
+    swapForm.className = 'swap-form hidden';
+    swapForm.innerHTML = `
+      <input class="swap-input" type="text" placeholder="Paste new image URL…" value="${value}" />
+      <button class="swap-apply btn btn--primary" style="height:32px;padding:0 12px;font-size:12px;">Apply</button>
+      <button class="swap-cancel btn btn--secondary" style="height:32px;padding:0 12px;font-size:12px;">Cancel</button>`;
+
+    swapBtn.addEventListener('click', () => {
+      swapForm.classList.remove('hidden');
+      swapForm.querySelector('.swap-input').select();
+    });
+
+    swapForm.querySelector('.swap-cancel').addEventListener('click', () => {
+      swapForm.classList.add('hidden');
+    });
+
+    swapForm.querySelector('.swap-apply').addEventListener('click', () => {
+      const newUrl = swapForm.querySelector('.swap-input').value.trim();
+      if (!newUrl) return;
+      img.src = newUrl;
+      urlText.textContent = newUrl.split('/').pop();
+      swapForm.querySelector('.swap-input').value = newUrl;
+      swapForm.classList.add('hidden');
+      // Update the content object so the new URL is used on push
+      if (contentRef) contentRef[slug] = newUrl;
+    });
+
     valueEl.appendChild(img);
-    valueEl.appendChild(urlText);
+    valueEl.appendChild(urlRow);
+    valueEl.appendChild(swapForm);
   } else if (meta.type === 'RichText') {
     valueEl.className = 'field-value';
     valueEl.innerHTML = value;

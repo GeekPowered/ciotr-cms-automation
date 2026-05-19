@@ -460,12 +460,55 @@ option.exists-in-cms {
   border: 1px solid var(--border);
   display: block;
 }
+.field-image-url-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
 .field-image-url {
   font-size: 11px;
   color: var(--text-3);
   font-family: var(--font-mono);
   word-break: break-all;
+  flex: 1;
 }
+.btn-swap {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-3);
+  background: var(--bg-4);
+  border: 1px solid var(--border-2);
+  border-radius: 5px;
+  padding: 3px 9px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color .12s, background .12s;
+  flex-shrink: 0;
+}
+.btn-swap:hover { color: var(--text-1); background: var(--bg-3); }
+
+.swap-form {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+.swap-input {
+  flex: 1;
+  min-width: 200px;
+  height: 32px;
+  background: var(--bg);
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius);
+  padding: 0 10px;
+  font-size: 12px;
+  font-family: var(--font-mono);
+  color: var(--text-1);
+  outline: none;
+}
+.swap-input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue-glow); }
 
 /* ── Modal ────────────────────────────────────────────────── */
 .modal-overlay {
