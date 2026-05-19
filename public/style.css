@@ -292,6 +292,7 @@ body {
 }
 
 .preview-actions { display: flex; gap: 10px; flex-shrink: 0; }
+.preview-elapsed { font-size: 12px; color: var(--text-4); font-family: var(--font-mono); }
 
 /* ── Field sections ───────────────────────────────────────── */
 .field-sections { padding: 0; }
@@ -638,6 +639,7 @@ option.exists-in-cms {
   flex: 1;
 }
 .batch-sidebar-item.active .batch-sidebar-name { color: var(--text-1); }
+.batch-sidebar-elapsed { color: var(--text-4); font-size: 11px; font-family: var(--font-mono); }
 
 .batch-status {
   font-size: 13px;

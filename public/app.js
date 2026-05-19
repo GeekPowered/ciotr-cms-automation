@@ -86,6 +86,11 @@ let batchPages = [];
 let batchLocation = null;
 let batchSelectedIndex = -1;
 
+// Timing
+let currentElapsed = null;
+let singleTimerInterval = null;
+let batchTimerInterval = null;
+
 /* ── Boot ─────────────────────────────────────────────────── */
 async function boot() {
   try {
@@ -116,6 +121,7 @@ async function boot() {
 
     wireEvents();
     loadExistingSlugs(); // non-blocking — updates dropdown when ready
+    restoreSession();
   } catch (err) {
     showError('Failed to load app config: ' + err.message);
   }
@@ -279,6 +285,13 @@ async function runGenerate() {
   document.getElementById('loading-sub').style.color = '';
   document.querySelector('.loading-title').textContent = 'Generating content…';
 
+  const startTime = Date.now();
+  clearInterval(singleTimerInterval);
+  singleTimerInterval = setInterval(() => {
+    const secs = ((Date.now() - startTime) / 1000).toFixed(0);
+    document.getElementById('loading-sub').textContent = `Generating… ${secs}s`;
+  }, 1000);
+
   try {
     const res = await fetch('/api/generate', {
       method: 'POST',
@@ -292,6 +305,8 @@ async function runGenerate() {
       throw new Error(data.error || 'Generation failed');
     }
 
+    clearInterval(singleTimerInterval);
+    currentElapsed = ((Date.now() - startTime) / 1000).toFixed(1);
     currentContent = data.content;
     currentHasReference = data.hasReference;
     currentImages = data.images || {};
@@ -302,9 +317,11 @@ async function runGenerate() {
     if (currentImages.benefits) currentContent['benefits-section-image'] = currentImages.benefits;
     if (data.cityImage)         currentContent['unique-section-image']   = data.cityImage;
 
+    saveSession();
     renderPreview();
     showState('preview');
   } catch (err) {
+    clearInterval(singleTimerInterval);
     showState('loading'); // keep loading panel visible to show error
     showError(err.message);
   }
@@ -357,6 +374,9 @@ function renderPreview() {
     badge.textContent = 'Generated from scratch ✦';
     badge.className = 'preview-badge preview-badge--generated';
   }
+
+  const elapsed = document.getElementById('preview-elapsed');
+  if (elapsed) elapsed.textContent = currentElapsed ? `⏱ ${currentElapsed}s` : '';
 
   renderFieldSections(document.getElementById('field-sections'), currentContent);
 }
@@ -531,6 +551,7 @@ async function runBatchGenerate() {
       cityImage: null,
       hasReference: true,
       error: null,
+      elapsed: null,
     }));
 
   batchSelectedIndex = -1;
@@ -539,6 +560,17 @@ async function runBatchGenerate() {
   document.getElementById('batch-push-all-btn').classList.add('hidden');
   updateBatchProgress(0, batchPages.length);
   renderBatchSidebar();
+  const batchStartTime = Date.now();
+
+  clearInterval(batchTimerInterval);
+  batchTimerInterval = setInterval(() => {
+    batchPages.forEach((page, idx) => {
+      if (page.status !== 'generating' || !page.startTime) return;
+      const secs = ((Date.now() - page.startTime) / 1000).toFixed(0);
+      const el = document.querySelector(`.batch-sidebar-item[data-index="${idx}"] .batch-sidebar-elapsed`);
+      if (el) el.textContent = ` · ${secs}s`;
+    });
+  }, 1000);
 
   const total = batchPages.length;
   let completed = 0;
@@ -549,6 +581,8 @@ async function runBatchGenerate() {
     while (nextIndex < total) {
       const i = nextIndex++;
       batchPages[i].status = 'generating';
+      const pageStart = Date.now();
+      batchPages[i].startTime = pageStart;
       updateBatchSidebarItem(i);
       if (batchSelectedIndex === i) renderBatchContent(i);
 
@@ -578,8 +612,10 @@ async function runBatchGenerate() {
         batchPages[i].error = err.message;
       }
 
+      batchPages[i].elapsed = ((Date.now() - pageStart) / 1000).toFixed(1);
       completed++;
       updateBatchProgress(completed, total);
+      saveBatchSession();
       updateBatchSidebarItem(i);
 
       // Auto-select first finished page
@@ -596,10 +632,12 @@ async function runBatchGenerate() {
 
   await Promise.all(Array.from({ length: CONCURRENCY }, worker));
 
+  clearInterval(batchTimerInterval);
   const doneCount = batchPages.filter(p => p.status === 'done').length;
   const errorCount = batchPages.filter(p => p.status === 'error').length;
+  const totalElapsed = ((Date.now() - batchStartTime) / 1000).toFixed(0);
   document.getElementById('batch-title').textContent =
-    `${doneCount} of ${total} pages ready — ${batchLocation}` +
+    `${doneCount} of ${total} pages ready — ${batchLocation} · ⏱ ${totalElapsed}s total` +
     (errorCount > 0 ? ` (${errorCount} failed)` : '');
 
   if (doneCount > 0) {
@@ -629,7 +667,7 @@ function buildBatchSidebarItem(i) {
   item.className = 'batch-sidebar-item' + (i === batchSelectedIndex ? ' active' : '');
   item.innerHTML = `
     <span class="batch-status batch-status--${page.status}">${icons[page.status] || '○'}</span>
-    <span class="batch-sidebar-name">${page.name}</span>`;
+    <span class="batch-sidebar-name">${page.name}${page.elapsed ? `<span class="batch-sidebar-elapsed"> · ${page.elapsed}s</span>` : ''}</span>`;
   item.addEventListener('click', () => {
     batchSelectedIndex = i;
     document.querySelectorAll('.batch-sidebar-item').forEach((el, j) =>
@@ -723,6 +761,7 @@ async function runBatchPushSingle(i) {
 
     batchPages[i].status = 'pushed';
     existingSlugs.add(page.slug);
+    saveBatchSession();
     updateBatchSidebarItem(i);
     if (batchSelectedIndex === i) renderBatchContent(i);
 
@@ -752,6 +791,77 @@ async function runBatchPushAll() {
 
   btn.disabled = false;
   btn.textContent = '↑ Push All Ready';
+}
+
+/* ── Session persistence ──────────────────────────────────── */
+function saveSession() {
+  try {
+    localStorage.setItem('ciotr_session', JSON.stringify({
+      mode: 'single',
+      location: currentLocation,
+      pageType: currentPageType,
+      content: currentContent,
+      images: currentImages,
+      hasReference: currentHasReference,
+      elapsed: currentElapsed,
+    }));
+  } catch (_) {}
+}
+
+function saveBatchSession() {
+  try {
+    localStorage.setItem('ciotr_session', JSON.stringify({
+      mode: 'batch',
+      location: batchLocation,
+      pages: batchPages,
+      selectedIndex: batchSelectedIndex,
+    }));
+  } catch (_) {}
+}
+
+function restoreSession() {
+  try {
+    const saved = localStorage.getItem('ciotr_session');
+    if (!saved) return;
+    const data = JSON.parse(saved);
+
+    if (data.mode === 'single' && data.content) {
+      currentContent = data.content;
+      currentLocation = data.location;
+      currentPageType = data.pageType;
+      currentImages = data.images || {};
+      currentHasReference = data.hasReference;
+      currentElapsed = data.elapsed;
+
+      document.getElementById('location-select').value = currentLocation || '';
+      document.getElementById('pagetype-select').value = currentPageType || '';
+      document.getElementById('generate-btn').disabled = !currentLocation || !currentPageType;
+      document.getElementById('batch-btn').disabled = !currentLocation;
+
+      renderPreview();
+      showState('preview');
+
+    } else if (data.mode === 'batch' && data.pages?.length) {
+      batchPages = data.pages;
+      batchLocation = data.location;
+      batchSelectedIndex = data.selectedIndex >= 0 ? data.selectedIndex : 0;
+
+      document.getElementById('location-select').value = batchLocation || '';
+      document.getElementById('batch-btn').disabled = !batchLocation;
+
+      const completed = batchPages.filter(p => p.status === 'done' || p.status === 'pushed' || p.status === 'error').length;
+      const doneCount = batchPages.filter(p => p.status === 'done').length;
+
+      showState('batch');
+      document.getElementById('batch-title').textContent = `Restored — ${batchLocation}`;
+      renderBatchSidebar();
+      updateBatchProgress(completed, batchPages.length);
+      if (doneCount > 0) document.getElementById('batch-push-all-btn').classList.remove('hidden');
+      if (batchSelectedIndex >= 0) renderBatchContent(batchSelectedIndex);
+    }
+  } catch (_) {
+    localStorage.removeItem('ciotr_session');
+  }
 }
 
 /* ── Init ─────────────────────────────────────────────────── */
