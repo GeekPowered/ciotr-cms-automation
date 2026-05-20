@@ -146,37 +146,37 @@
   },
   "heat-pump-installation": {
     "hero":     "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/69ab3d16f6f88d9ddbb3adce_hvac-heat-pump.webp",
-    "signs":    "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/6a0dc46e6c95e77f5710046f_Signs-HVAC1%20(1).png",
+    "signs":    "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/6a0deb9a93412ac1fe4661d3_heating%20signs%202.jpeg",
     "benefits": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/6a0dc46d8163fba1e9187853_Benefits%202%20(1).jpeg"
   },
   "heat-pump-repair": {
     "hero":     "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/69ab3d16f6f88d9ddbb3adce_hvac-heat-pump.webp",
-    "signs":    "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/6a0dc47477a4a292650bdad1_Signs-HVAC2%20(1).jpeg",
+    "signs":    "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/6a0deb9a9e4b8a5c407f593d_heating%20signs%203.jpeg",
     "benefits": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b2141e15971c78973439ec_benefits-hvac.webp"
   },
   "heat-pump-replacement": {
     "hero":     "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/69ab3d16f6f88d9ddbb3adce_hvac-heat-pump.webp",
-    "signs":    "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/6a0dc46dfab04327c2375126_Signs-HVAC3%20(1).jpeg",
+    "signs":    "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/6a0deb9af1e57b4f8e8f0ca4_heating%20signs%201.jpeg",
     "benefits": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/6a0dc46d8298444f1c53a2e5_Benefits%203%20(1).jpeg"
   },
   "furnace-repair": {
     "hero":     "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/693c805163380d44f54a7e0f_cold-is-on-the-right-furnace-repair-01.webp",
-    "signs":    "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/6a0dc46e6c95e77f5710046f_Signs-HVAC1%20(1).png",
+    "signs":    "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/6a0deb9af1e57b4f8e8f0ca4_heating%20signs%201.jpeg",
     "benefits": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/6a0dc46d40e88c8c680924ca_Benefits%204%20(1).jpeg"
   },
   "furnace-replacement": {
-    "hero":     "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/693c8051fb00aff650929389_cold-is-on-the-right-furnace-repair-02.webp",
-    "signs":    "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/6a0dc47477a4a292650bdad1_Signs-HVAC2%20(1).jpeg",
+    "hero":     "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/693c8e75ae7f6d0b627b5cd4_cold-is-on-the-right-furnace-repair-04.webp",
+    "signs":    "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/6a0deb9a93412ac1fe4661d3_heating%20signs%202.jpeg",
     "benefits": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/68b2141e15971c78973439ec_benefits-hvac.webp"
   },
   "furnace-installation": {
-    "hero":     "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/693c8051110ede31a76e6206_cold-is-on-the-right-furnace-repair-03.webp",
-    "signs":    "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/6a0dc46dfab04327c2375126_Signs-HVAC3%20(1).jpeg",
+    "hero":     "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/69a1f43147b32eefdd2d95eb_technician-truck.webp",
+    "signs":    "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/6a0deb9a9e4b8a5c407f593d_heating%20signs%203.jpeg",
     "benefits": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/6a0dc46d638c455dd22786c4_Benefits%201%20(1).jpeg"
   },
   "heating-repairs": {
-    "hero":     "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/693c8e75ae7f6d0b627b5cd4_cold-is-on-the-right-furnace-repair-04.webp",
-    "signs":    "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/6a0dc46e6c95e77f5710046f_Signs-HVAC1%20(1).png",
+    "hero":     "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/69ab3d16f6f88d9ddbb3adce_hvac-heat-pump.webp",
+    "signs":    "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/6a0deb9af1e57b4f8e8f0ca4_heating%20signs%201.jpeg",
     "benefits": "https://cdn.prod.website-files.com/68a5e26190b23bf113c6ccbe/6a0dc46d8163fba1e9187853_Benefits%202%20(1).jpeg"
   }
 }

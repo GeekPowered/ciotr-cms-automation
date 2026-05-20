@@ -52,8 +52,9 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 // ─── Per-location collection IDs ─────────────────────────────────────────────
 const COLLECTION_IDS = {
-  'Cedar Park': process.env.WEBFLOW_COLLECTION_ID_CEDAR_PARK,
-  'Round Rock': process.env.WEBFLOW_COLLECTION_ID_ROUND_ROCK,
+  'Bee Cave':         process.env.WEBFLOW_COLLECTION_ID_BEE_CAVE,
+  'Cedar Park':       process.env.WEBFLOW_COLLECTION_ID_CEDAR_PARK,
+  'Dripping Springs': process.env.WEBFLOW_COLLECTION_ID_DRIPPING_SPRINGS,
 };
 
 function getCollectionId(location) {
@@ -417,9 +418,8 @@ async function pushToWebflow(fieldData, pageType, location, existingItemId = nul
 
     // Slug conflict — fetch all items to find the existing ID and PATCH it
     const existingMap = await getExistingItems(location);
-    console.log(`[push] slug conflict on "${pageType}". existingMap keys:`, Object.keys(existingMap));
     const conflictId = existingMap[pageType];
-    if (!conflictId) throw new Error(`Slug "${pageType}" already exists in Webflow but could not find its item ID to update. Found slugs: ${Object.keys(existingMap).join(', ') || 'none'}`);
+    if (!conflictId) throw new Error(`Webflow slug conflict: "${pageType}" is already used in another location's collection on this site. This is a Webflow platform limitation — you can still generate and preview the content here, but you'll need to create this page manually in the Webflow Designer (it will get an auto-generated URL like /${locationToSlug(location)}/${pageType}-xxxxx). Once that placeholder exists, push from here will update it automatically.`);
 
     const result = await webflowRequest('PATCH', `/v2/collections/${collectionId}/items/${conflictId}`, { fieldData: webflowFields, isDraft: true });
     return { ...result, wasUpdate: true };
@@ -438,7 +438,6 @@ async function getExistingItems(location) {
       const slug = item.fieldData?.slug;
       if (slug) map[slug] = item.id;
     }
-    console.log(`[getExistingItems] location="${location}" collectionId="${collectionId}" found ${Object.keys(map).length} items:`, Object.keys(map));
     return map;
   } catch (err) {
     console.error(`[getExistingItems] FAILED for location="${location}" collectionId="${collectionId}":`, err.message);
