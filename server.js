@@ -373,7 +373,7 @@ function webflowRequest(method, endpoint, body) {
   });
 }
 
-async function pushToWebflow(fieldData, pageType, location) {
+async function pushToWebflow(fieldData, pageType, location, existingItemId = null) {
   const collectionId = getCollectionId(location);
 
   const IMAGE_FIELD_SLUGS = new Set(['hero-image', 'signs-section-image', 'benefits-section-image', 'unique-section-image']);
@@ -401,26 +401,29 @@ async function pushToWebflow(fieldData, pageType, location) {
     webflowFields['unique-section-image'] = { url: cityImg, alt: `${fieldData['_location']} homes` };
   }
 
-  const result = await webflowRequest(
-    'POST',
-    `/v2/collections/${collectionId}/items`,
-    { fieldData: webflowFields, isDraft: true }
-  );
+  const result = existingItemId
+    ? await webflowRequest('PATCH', `/v2/collections/${collectionId}/items/${existingItemId}`, { fieldData: webflowFields, isDraft: true })
+    : await webflowRequest('POST', `/v2/collections/${collectionId}/items`, { fieldData: webflowFields, isDraft: true });
 
-  return result;
+  return { ...result, wasUpdate: !!existingItemId };
 }
 
 // ─── Webflow existing items ──────────────────────────────────────────────────
 
-async function getExistingSlugs(location) {
+async function getExistingItems(location) {
   const collectionId = getCollectionId(location);
-  if (!collectionId) return [];
+  if (!collectionId) return {};
   try {
     const result = await webflowRequest('GET', `/v2/collections/${collectionId}/items?limit=100`);
-    return (result.items || []).map(item => item.fieldData?.slug).filter(Boolean);
+    const map = {};
+    for (const item of (result.items || [])) {
+      const slug = item.fieldData?.slug;
+      if (slug) map[slug] = item.id;
+    }
+    return map;
   } catch (err) {
     console.error('Could not fetch existing CMS items:', err.message);
-    return [];
+    return {};
   }
 }
 
@@ -438,8 +441,8 @@ app.get('/api/config', (req, res) => {
 });
 
 app.get('/api/existing-slugs', async (req, res) => {
-  const slugs = await getExistingSlugs(req.query.location);
-  res.json({ slugs });
+  const items = await getExistingItems(req.query.location);
+  res.json({ slugs: Object.keys(items), items });
 });
 
 app.post('/api/generate', async (req, res) => {
@@ -477,7 +480,11 @@ app.post('/api/push', async (req, res) => {
   if (location) content['_location'] = location;
 
   try {
-    const result = await pushToWebflow(content, pageType, location);
+    // Check if this slug already exists so we can update instead of create
+    const existingItems = await getExistingItems(location);
+    const existingItemId = existingItems[pageType] || null;
+
+    const result = await pushToWebflow(content, pageType, location, existingItemId);
 
     // Save as reference file if this page type had no reference
     if (shouldSaveReference) {
@@ -491,6 +498,7 @@ app.post('/api/push', async (req, res) => {
     res.json({
       success: true,
       itemId: result.id,
+      wasUpdate: result.wasUpdate || false,
       dashboardUrl,
     });
   } catch (err) {

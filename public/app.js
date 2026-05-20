@@ -527,9 +527,10 @@ async function runPush() {
 
     // Show success
     const name = currentContent['name'] || currentPageType;
+    const action = data.wasUpdate ? 'updated' : 'created';
     document.getElementById('success-sub').textContent =
-      `"${name}" has been created as a draft (ID: ${data.itemId}).` +
-      (!currentHasReference ? ' Reference file saved for future generations.' : '');
+      `"${name}" has been ${action} as a draft (ID: ${data.itemId}).` +
+      (!currentHasReference && !data.wasUpdate ? ' Reference file saved for future generations.' : '');
 
     const webflowLink = document.getElementById('webflow-link');
     webflowLink.href = data.dashboardUrl;
