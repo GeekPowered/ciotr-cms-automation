@@ -1,6 +1,6 @@
 require('dotenv').config();
 const express = require('express');
-const session = require('express-session');
+const cookieSession = require('cookie-session');
 const Anthropic = require('@anthropic-ai/sdk');
 const fs = require('fs');
 const path = require('path');
@@ -9,11 +9,12 @@ const https = require('https');
 const app = express();
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: false }));
-app.use(session({
+app.use(cookieSession({
+  name: 'ciotr_auth',
   secret: process.env.SESSION_SECRET || 'ciotr-secret-key',
-  resave: false,
-  saveUninitialized: false,
-  cookie: { maxAge: 7 * 24 * 60 * 60 * 1000 },
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'lax',
 }));
 
 const APP_PASSWORD = process.env.APP_PASSWORD || 'GameChanger45!';
@@ -34,7 +35,8 @@ app.post('/login', (req, res) => {
 });
 
 app.get('/logout', (req, res) => {
-  req.session.destroy(() => res.redirect('/login'));
+  req.session = null;
+  res.redirect('/login');
 });
 
 function requireAuth(req, res, next) {
@@ -133,16 +135,21 @@ function readReference(pageType) {
 }
 
 function saveReference(pageType, content) {
-  if (!fs.existsSync(REFERENCE_DIR)) fs.mkdirSync(REFERENCE_DIR, { recursive: true });
-  const lines = ['SOURCE: generated', '='.repeat(60), ''];
-  for (const [key, value] of Object.entries(content)) {
-    if (typeof value !== 'string' || !value.trim()) continue;
-    const label = schema.fields.find(f => f.slug === key)?.displayName || key;
-    lines.push(`## ${label}`);
-    lines.push(value.replace(/<[^>]+>/g, ' ').replace(/\s{2,}/g, ' ').trim());
-    lines.push('');
+  try {
+    if (!fs.existsSync(REFERENCE_DIR)) fs.mkdirSync(REFERENCE_DIR, { recursive: true });
+    const lines = ['SOURCE: generated', '='.repeat(60), ''];
+    for (const [key, value] of Object.entries(content)) {
+      if (typeof value !== 'string' || !value.trim()) continue;
+      const label = schema.fields.find(f => f.slug === key)?.displayName || key;
+      lines.push(`## ${label}`);
+      lines.push(value.replace(/<[^>]+>/g, ' ').replace(/\s{2,}/g, ' ').trim());
+      lines.push('');
+    }
+    fs.writeFileSync(path.join(REFERENCE_DIR, `${pageType}.txt`), lines.join('\n'), 'utf8');
+  } catch (err) {
+    // File system is read-only in serverless environments — skip silently
+    console.warn('saveReference skipped (read-only fs):', err.message);
   }
-  fs.writeFileSync(path.join(REFERENCE_DIR, `${pageType}.txt`), lines.join('\n'), 'utf8');
 }
 
 // ─── Content generation ──────────────────────────────────────────────────────
@@ -440,7 +447,12 @@ app.post('/api/push', async (req, res) => {
 
 // ─── Start ───────────────────────────────────────────────────────────────────
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`\nCIOTR CMS Automation running at http://localhost:${PORT}\n`);
-});
+// Export for Vercel serverless — also listen when run directly (local dev)
+module.exports = app;
+
+if (require.main === module) {
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => {
+    console.log(`\nCIOTR CMS Automation running at http://localhost:${PORT}\n`);
+  });
+}
