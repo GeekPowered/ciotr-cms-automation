@@ -59,6 +59,51 @@ const COLLECTION_IDS = {
 function getCollectionId(location) {
   return COLLECTION_IDS[location] || process.env.WEBFLOW_COLLECTION_ID;
 }
+
+// ─── Location slug helper ────────────────────────────────────────────────────
+function locationToSlug(location) {
+  return location.toLowerCase().replace(/\s+/g, '-');
+}
+
+// ─── Related pages for interlinking ─────────────────────────────────────────
+const RELATED_PAGES = {
+  'plumbing':                        ['plumbing-repairs', 'commercial-plumbing', 'drain-cleaning', 'sewer-line-replacement', 'emergency-plumbing', 'whole-house-repiping', 'leak-detection', 'slab-leak-detection', 'water-softeners', 'garbage-disposal-services', 'gas-line-installation', 'water-filters', 'water-heaters', 'tankless-water-heater-installation', 'water-heater-installation', 'water-heater-repair', 'water-heater-replacement'],
+  'hvac':                            ['hvac-maintenance', 'hvac-repair', 'hvac-replacement', 'ac-repair', 'ac-installation', 'ac-replacement', 'commercial-ac-repair', 'mini-splits', 'heat-pump-installation', 'heat-pump-repair', 'heat-pump-replacement', 'furnace-repair', 'furnace-replacement', 'furnace-installation', 'heating-repairs'],
+  'plumbing-repairs':                ['emergency-plumbing', 'drain-cleaning', 'leak-detection', 'slab-leak-detection', 'whole-house-repiping', 'sewer-line-replacement', 'garbage-disposal-services', 'gas-line-installation', 'water-heater-repair'],
+  'commercial-plumbing':             ['plumbing-repairs', 'drain-cleaning', 'sewer-line-replacement', 'emergency-plumbing', 'water-heaters', 'gas-line-installation', 'commercial-ac-repair'],
+  'drain':                           ['drain-cleaning', 'sewer', 'sewer-line-replacement', 'emergency-plumbing', 'plumbing-repairs'],
+  'sewer':                           ['drain-cleaning', 'sewer-line-replacement', 'emergency-plumbing', 'leak-detection', 'whole-house-repiping', 'plumbing-repairs'],
+  'emergency-plumbing':              ['plumbing-repairs', 'drain-cleaning', 'sewer-line-replacement', 'leak-detection', 'slab-leak-detection', 'water-heater-repair'],
+  'whole-house-repiping':            ['plumbing-repairs', 'leak-detection', 'slab-leak-detection', 'water-heaters', 'emergency-plumbing'],
+  'leak-detection':                  ['slab-leak-detection', 'emergency-plumbing', 'whole-house-repiping', 'plumbing-repairs'],
+  'water-softeners':                 ['water-filters', 'water-heaters', 'plumbing-repairs'],
+  'garbage-disposal-services':       ['plumbing-repairs', 'drain-cleaning', 'emergency-plumbing'],
+  'gas-line-installation':           ['plumbing-repairs', 'emergency-plumbing', 'commercial-plumbing'],
+  'drain-cleaning':                  ['drain', 'sewer', 'sewer-line-replacement', 'emergency-plumbing', 'garbage-disposal-services'],
+  'sewer-line-replacement':          ['sewer', 'drain-cleaning', 'whole-house-repiping', 'emergency-plumbing'],
+  'slab-leak-detection':             ['leak-detection', 'whole-house-repiping', 'emergency-plumbing', 'plumbing-repairs'],
+  'water-filters':                   ['water-softeners', 'water-heaters', 'plumbing-repairs'],
+  'water-heaters':                   ['water-heater-repair', 'water-heater-installation', 'water-heater-replacement', 'tankless-water-heater-installation', 'plumbing-repairs'],
+  'tankless-water-heater-installation': ['water-heaters', 'water-heater-installation', 'water-heater-replacement', 'water-heater-repair'],
+  'water-heater-installation':       ['water-heaters', 'water-heater-repair', 'water-heater-replacement', 'tankless-water-heater-installation'],
+  'water-heater-repair':             ['water-heaters', 'water-heater-installation', 'water-heater-replacement', 'emergency-plumbing', 'tankless-water-heater-installation'],
+  'water-heater-replacement':        ['water-heaters', 'water-heater-repair', 'water-heater-installation', 'tankless-water-heater-installation'],
+  'hvac-maintenance':                ['ac-repair', 'hvac-repair', 'hvac-replacement', 'heat-pump-installation', 'furnace-repair', 'mini-splits'],
+  'hvac-repair':                     ['hvac-maintenance', 'hvac-replacement', 'ac-repair', 'furnace-repair', 'heat-pump-repair', 'heating-repairs'],
+  'hvac-replacement':                ['hvac-repair', 'hvac-maintenance', 'ac-replacement', 'furnace-replacement', 'heat-pump-replacement'],
+  'ac-repair':                       ['hvac-repair', 'ac-replacement', 'hvac-maintenance', 'ac-installation', 'commercial-ac-repair'],
+  'ac-installation':                 ['ac-repair', 'ac-replacement', 'hvac-maintenance', 'mini-splits', 'heat-pump-installation'],
+  'ac-replacement':                  ['ac-repair', 'ac-installation', 'hvac-replacement', 'heat-pump-replacement'],
+  'commercial-ac-repair':            ['hvac-repair', 'hvac-maintenance', 'hvac-replacement', 'ac-repair', 'commercial-plumbing'],
+  'mini-splits':                     ['ac-installation', 'hvac-repair', 'hvac-maintenance', 'heat-pump-installation', 'ac-replacement'],
+  'heat-pump-installation':          ['heat-pump-repair', 'heat-pump-replacement', 'hvac-maintenance', 'ac-installation', 'mini-splits'],
+  'heat-pump-repair':                ['heat-pump-installation', 'heat-pump-replacement', 'hvac-repair', 'hvac-maintenance'],
+  'heat-pump-replacement':           ['heat-pump-repair', 'heat-pump-installation', 'hvac-replacement', 'ac-replacement'],
+  'furnace-repair':                  ['heating-repairs', 'furnace-replacement', 'furnace-installation', 'hvac-maintenance', 'hvac-repair'],
+  'furnace-replacement':             ['furnace-repair', 'furnace-installation', 'heating-repairs', 'hvac-replacement'],
+  'furnace-installation':            ['furnace-repair', 'furnace-replacement', 'heating-repairs', 'hvac-maintenance'],
+  'heating-repairs':                 ['furnace-repair', 'furnace-replacement', 'furnace-installation', 'hvac-repair', 'heat-pump-repair'],
+};
 const schema = JSON.parse(fs.readFileSync(path.join(__dirname, 'webflow-schema.json'), 'utf8'));
 const REFERENCE_DIR = path.join(__dirname, 'reference-pages');
 
@@ -176,6 +221,11 @@ You must respond with a single valid JSON object and nothing else. Do not includ
 function buildPrompt(location, pageType, reference) {
   const serviceName = PAGE_TYPE_NAMES[pageType] || pageType;
   const locationContext = LOCATIONS[location];
+  const locationSlug = locationToSlug(location);
+  const relatedSlugs = RELATED_PAGES[pageType] || [];
+  const relatedLinks = relatedSlugs
+    .map(slug => `  /${locationSlug}/${slug}  →  ${PAGE_TYPE_NAMES[slug]}`)
+    .join('\n');
 
   const fieldSpec = `Generate a JSON object with EXACTLY these keys. RichText fields must be valid HTML using only: <h1> <h2> <h3> <p> <ul> <li> <a href="..."> <strong> <em>. PlainText fields must be plain strings with no HTML.
 
@@ -194,7 +244,10 @@ ALL other RichText/PlainText fields (generate for all — do not omit any):
 - "hero-bullet-3": <p>one short trust bullet</p>
 - "breadcrumb": plain text breadcrumb label, e.g. "${serviceName}"
 - "services-section-heading": <h2>[Service] We Provide in ${location}</h2>
-- "service-item-1" through "service-item-11": each is <h3>Service Name</h3><p>2-3 sentence description written for ${location} — be specific about what the service involves and why it matters for this community</p> and optionally <a href="/path">Learn More</a> where a link exists. Generate up to 11 relevant sub-services for ${serviceName}. Use the reference links where provided.
+- "service-item-1" through "service-item-11": each is <h3>Service Name</h3><p>2-3 sentence description written for ${location} — be specific about what the service involves and why it matters for this community</p><a href="/LOCATION-SLUG/PAGE-SLUG">Learn More</a>. Generate up to 11 relevant sub-services for ${serviceName}. Every service item that corresponds to one of the available related pages below MUST include a Learn More link using the exact URL listed. Do not invent URLs — only link to pages in the list below.
+
+Available internal links for this page (use these exact URLs):
+${relatedLinks || '  (no related pages defined)'}
 - "signs-section-heading": <h2>Signs You Need [Service] in ${location}</h2>
 - "signs-section-body": <ul> with 5-7 <li> warning signs, specific to the service
 - "benefits-section-heading": <h2>Benefits of [Service] in ${location}</h2>
