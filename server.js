@@ -401,11 +401,28 @@ async function pushToWebflow(fieldData, pageType, location, existingItemId = nul
     webflowFields['unique-section-image'] = { url: cityImg, alt: `${fieldData['_location']} homes` };
   }
 
-  const result = existingItemId
-    ? await webflowRequest('PATCH', `/v2/collections/${collectionId}/items/${existingItemId}`, { fieldData: webflowFields, isDraft: true })
-    : await webflowRequest('POST', `/v2/collections/${collectionId}/items`, { fieldData: webflowFields, isDraft: true });
+  // If we already know the existing item ID, go straight to PATCH
+  if (existingItemId) {
+    const result = await webflowRequest('PATCH', `/v2/collections/${collectionId}/items/${existingItemId}`, { fieldData: webflowFields, isDraft: true });
+    return { ...result, wasUpdate: true };
+  }
 
-  return { ...result, wasUpdate: !!existingItemId };
+  // Try POST first; if slug already exists, look up the item and retry with PATCH
+  try {
+    const result = await webflowRequest('POST', `/v2/collections/${collectionId}/items`, { fieldData: webflowFields, isDraft: true });
+    return { ...result, wasUpdate: false };
+  } catch (postErr) {
+    const isSlugConflict = postErr.message && postErr.message.includes('Unique value is already in database');
+    if (!isSlugConflict) throw postErr;
+
+    // Slug conflict — fetch all items to find the existing ID and PATCH it
+    const existingMap = await getExistingItems(location);
+    const conflictId = existingMap[pageType];
+    if (!conflictId) throw new Error(`Slug "${pageType}" already exists in Webflow but could not find its item ID to update.`);
+
+    const result = await webflowRequest('PATCH', `/v2/collections/${collectionId}/items/${conflictId}`, { fieldData: webflowFields, isDraft: true });
+    return { ...result, wasUpdate: true };
+  }
 }
 
 // ─── Webflow existing items ──────────────────────────────────────────────────
