@@ -417,8 +417,9 @@ async function pushToWebflow(fieldData, pageType, location, existingItemId = nul
 
     // Slug conflict — fetch all items to find the existing ID and PATCH it
     const existingMap = await getExistingItems(location);
+    console.log(`[push] slug conflict on "${pageType}". existingMap keys:`, Object.keys(existingMap));
     const conflictId = existingMap[pageType];
-    if (!conflictId) throw new Error(`Slug "${pageType}" already exists in Webflow but could not find its item ID to update.`);
+    if (!conflictId) throw new Error(`Slug "${pageType}" already exists in Webflow but could not find its item ID to update. Found slugs: ${Object.keys(existingMap).join(', ') || 'none'}`);
 
     const result = await webflowRequest('PATCH', `/v2/collections/${collectionId}/items/${conflictId}`, { fieldData: webflowFields, isDraft: true });
     return { ...result, wasUpdate: true };
@@ -437,9 +438,10 @@ async function getExistingItems(location) {
       const slug = item.fieldData?.slug;
       if (slug) map[slug] = item.id;
     }
+    console.log(`[getExistingItems] location="${location}" collectionId="${collectionId}" found ${Object.keys(map).length} items:`, Object.keys(map));
     return map;
   } catch (err) {
-    console.error('Could not fetch existing CMS items:', err.message);
+    console.error(`[getExistingItems] FAILED for location="${location}" collectionId="${collectionId}":`, err.message);
     return {};
   }
 }
