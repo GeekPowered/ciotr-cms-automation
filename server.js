@@ -7,6 +7,7 @@ const path = require('path');
 const https = require('https');
 
 const app = express();
+app.set('trust proxy', 1);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieSession({
