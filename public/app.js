@@ -310,7 +310,8 @@ async function runGenerate() {
     const data = await res.json();
 
     if (!res.ok || !data.success) {
-      throw new Error(data.error || 'Generation failed');
+      const errMsg = data.error ? (typeof data.error === 'string' ? data.error : JSON.stringify(data.error)) : 'Generation failed';
+      throw new Error(errMsg);
     }
 
     clearInterval(singleTimerInterval);
@@ -601,7 +602,10 @@ async function runBatchGenerate() {
           body: JSON.stringify({ location: batchLocation, pageType: batchPages[i].slug }),
         });
         const data = await res.json();
-        if (!res.ok || !data.success) throw new Error(data.error || 'Generation failed');
+        if (!res.ok || !data.success) {
+          const errMsg = data.error ? (typeof data.error === 'string' ? data.error : JSON.stringify(data.error)) : 'Generation failed';
+          throw new Error(errMsg);
+        }
 
         batchPages[i].content = data.content;
         batchPages[i].images = data.images || {};
