@@ -469,6 +469,27 @@ function webflowRequest(method, endpoint, body) {
   });
 }
 
+function buildFaqSchema(fieldData) {
+  const entities = [];
+  for (let i = 1; i <= 6; i++) {
+    const q = fieldData[`faq-${i}-question`];
+    const a = fieldData[`faq-${i}-answer`];
+    if (q && a) {
+      entities.push({
+        '@type': 'Question',
+        'name': q,
+        'acceptedAnswer': { '@type': 'Answer', 'text': a },
+      });
+    }
+  }
+  if (entities.length === 0) return null;
+  return JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    'mainEntity': entities,
+  });
+}
+
 async function pushToWebflow(fieldData, pageType, location, existingItemId = null) {
   const collectionId = getCollectionId(location);
 
@@ -499,6 +520,10 @@ async function pushToWebflow(fieldData, pageType, location, existingItemId = nul
   if (cityImg) {
     webflowFields['unique-section-image'] = { url: cityImg, alt: `${fieldData['_location']} homes` };
   }
+
+  // FAQ JSON-LD schema — built server-side from Q&A fields
+  const faqSchema = buildFaqSchema(fieldData);
+  if (faqSchema) webflowFields['faq-schema'] = faqSchema;
 
   // If we already know the existing item ID, go straight to PATCH
   if (existingItemId) {
