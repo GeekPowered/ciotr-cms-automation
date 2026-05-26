@@ -483,11 +483,12 @@ function buildFaqSchema(fieldData) {
     }
   }
   if (entities.length === 0) return null;
-  return JSON.stringify({
+  const json = JSON.stringify({
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
     'mainEntity': entities,
   });
+  return `<script type="application/ld+json">${json}</script>`;
 }
 
 async function pushToWebflow(fieldData, pageType, location, existingItemId = null) {
