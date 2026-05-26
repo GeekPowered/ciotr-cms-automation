@@ -23,7 +23,7 @@ const APP_PASSWORD = process.env.APP_PASSWORD || 'GameChanger45!';
 app.get('/login', (req, res) => {
   if (req.session.authed) return res.redirect('/');
   const error = req.query.error ? '<p style="color:#f87171;margin:0 0 16px">Incorrect password.</p>' : '';
-  res.send(`<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CIOTR CMS — Login</title><style>*{box-sizing:border-box;margin:0;padding:0}body{background:#0f1117;color:#f0f2f8;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh}.card{background:#181c27;border:1px solid #2d3348;border-radius:16px;padding:40px;width:100%;max-width:380px;box-shadow:0 24px 64px rgba(0,0,0,.6)}.logo{font-size:32px;margin-bottom:16px}.title{font-size:20px;font-weight:700;margin-bottom:4px}.sub{font-size:13px;color:#6b7599;margin-bottom:28px}input{width:100%;height:44px;background:#1e2233;border:1px solid #374060;border-radius:8px;padding:0 14px;color:#f0f2f8;font-size:14px;margin-bottom:16px;outline:none}input:focus{border-color:#4f8ef7;box-shadow:0 0 0 3px rgba(79,142,247,.15)}button{width:100%;height:44px;background:#4f8ef7;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer}button:hover{background:#6ba3fa}</style></head><body><div class="card"><div class="logo">❄️</div><div class="title">CIOTR CMS Automation</div><div class="sub">Cold Is On the Right · Location Page Generator</div>${error}<form method="POST" action="/login"><input type="password" name="password" placeholder="Password" autofocus><button type="submit">Sign In</button></form></div></body></html>`);
+  res.send(`<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CIOTR CMS — Login</title><style>*{box-sizing:border-box;margin:0;padding:0}body{background:#0f1117;color:#f0f2f8;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh}.card{background:#181c27;border:1px solid #2d3348;border-radius:16px;padding:40px;width:100%;max-width:380px;box-shadow:0 24px 64px rgba(0,0,0,.6)}.logo{font-size:32px;margin-bottom:16px}.title{font-size:20px;font-weight:700;margin-bottom:4px}.sub{font-size:13px;color:#6b7599;margin-bottom:28px}input{width:100%;height:44px;background:#1e2233;border:1px solid #374060;border-radius:8px;padding:0 14px;color:#f0f2f8;font-size:14px;margin-bottom:16px;outline:none}input:focus{border-color:#4f8ef7;box-shadow:0 0 0 3px rgba(79,142,247,.15)}button{width:100%;height:44px;background:#4f8ef7;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer}button:hover{background:#6ba3fa}</style></head><body><div class="card"><div class="logo">❄️</div><div class="title">CIOTR CMS Automation</div><div class="sub">Cold is on the Right · Location Page Generator</div>${error}<form method="POST" action="/login"><input type="password" name="password" placeholder="Password" autofocus><button type="submit">Sign In</button></form></div></body></html>`);
 });
 
 app.post('/login', (req, res) => {
@@ -52,9 +52,17 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 // ─── Per-location collection IDs ─────────────────────────────────────────────
 const COLLECTION_IDS = {
+  'Lakeway':          process.env.WEBFLOW_COLLECTION_ID,
   'Bee Cave':         process.env.WEBFLOW_COLLECTION_ID_BEE_CAVE,
   'Cedar Park':       process.env.WEBFLOW_COLLECTION_ID_CEDAR_PARK,
   'Dripping Springs': process.env.WEBFLOW_COLLECTION_ID_DRIPPING_SPRINGS,
+  'Georgetown':       process.env.WEBFLOW_COLLECTION_ID_GEORGETOWN,
+  'Leander':          process.env.WEBFLOW_COLLECTION_ID_LEANDER,
+  'Pflugerville':     process.env.WEBFLOW_COLLECTION_ID_PFLUGERVILLE,
+  'Round Rock':       process.env.WEBFLOW_COLLECTION_ID_ROUND_ROCK,
+  'Spicewood':        process.env.WEBFLOW_COLLECTION_ID_SPICEWOOD,
+  'Steiner Ranch':    process.env.WEBFLOW_COLLECTION_ID_STEINER_RANCH,
+  'Westlake':         process.env.WEBFLOW_COLLECTION_ID_WESTLAKE,
 };
 
 function getCollectionId(location) {
@@ -112,6 +120,91 @@ const IMAGE_MAP_PATH = path.join(__dirname, 'image-map.json');
 const imageMap = fs.existsSync(IMAGE_MAP_PATH)
   ? JSON.parse(fs.readFileSync(IMAGE_MAP_PATH, 'utf8'))
   : {};
+
+const FOLDER_MAP_PATH = path.join(__dirname, 'folder-map.json');
+const folderMapData = fs.existsSync(FOLDER_MAP_PATH)
+  ? JSON.parse(fs.readFileSync(FOLDER_MAP_PATH, 'utf8'))
+  : { folders: {}, pageTypes: {} };
+
+// ─── Asset image cache ───────────────────────────────────────────────────────
+// Fetches all Webflow site assets once, indexes by folder ID, and caches for
+// ASSET_CACHE_TTL_MS so image selection is fast and API calls are minimal.
+
+let _assetCache = null;
+let _assetCacheExpiry = 0;
+const ASSET_CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes
+
+async function loadAssetCache() {
+  const now = Date.now();
+  if (_assetCache && now < _assetCacheExpiry) return _assetCache;
+
+  const siteId = process.env.WEBFLOW_SITE_ID;
+  const folderIndex = {};
+
+  // Collect all folder IDs we care about so we can skip unrelated assets
+  const watchedFolders = new Set();
+  for (const cat of Object.values(folderMapData.folders)) {
+    if (cat.hero)     watchedFolders.add(cat.hero);
+    if (cat.signs)    watchedFolders.add(cat.signs);
+    if (cat.benefits) watchedFolders.add(cat.benefits);
+  }
+
+  const limit = 100;
+  let offset = 0;
+  let hasMore = true;
+
+  while (hasMore) {
+    const result = await webflowRequest('GET', `/v2/sites/${siteId}/assets?limit=${limit}&offset=${offset}`);
+    const assets = result.assets || [];
+
+    for (const asset of assets) {
+      // Webflow v2 REST uses `hostedUrl`; the MCP wrapper exposes `url` — handle both
+      const url = asset.hostedUrl || asset.url;
+      // Folder ID may be a flat string (REST) or nested object (MCP wrapper)
+      const folderId = typeof asset.parentFolder === 'string'
+        ? asset.parentFolder
+        : (asset.assetParentFolderInfo && asset.assetParentFolderInfo.id) || null;
+
+      if (url && folderId && watchedFolders.has(folderId)) {
+        if (!folderIndex[folderId]) folderIndex[folderId] = [];
+        folderIndex[folderId].push(url);
+      }
+    }
+
+    const total = result.total || 0;
+    offset += assets.length;
+    hasMore = assets.length === limit && offset < total;
+  }
+
+  _assetCache = folderIndex;
+  _assetCacheExpiry = now + ASSET_CACHE_TTL_MS;
+  return folderIndex;
+}
+
+async function getRandomImageFromFolder(folderId) {
+  if (!folderId) return null;
+  try {
+    const index = await loadAssetCache();
+    const urls = index[folderId];
+    if (!urls || urls.length === 0) return null;
+    return urls[Math.floor(Math.random() * urls.length)];
+  } catch {
+    return null;
+  }
+}
+
+async function getImagesForPageType(pageType) {
+  const category = folderMapData.pageTypes[pageType];
+  const folders  = category ? folderMapData.folders[category] : null;
+  if (!folders) return null;
+
+  const [hero, signs, benefits] = await Promise.all([
+    getRandomImageFromFolder(folders.hero),
+    getRandomImageFromFolder(folders.signs),
+    getRandomImageFromFolder(folders.benefits),
+  ]);
+  return { hero, signs, benefits };
+}
 
 const CITY_IMAGE_MAP_PATH = path.join(__dirname, 'city-image-map.json');
 const cityImageMap = fs.existsSync(CITY_IMAGE_MAP_PATH)
@@ -201,7 +294,7 @@ function saveReference(pageType, content) {
 
 // ─── Content generation ──────────────────────────────────────────────────────
 
-const SYSTEM_PROMPT = `You are a content writer for Cold Is On the Right Plumbing & Air (CIOTR), a licensed plumbing and HVAC company based in Austin, TX. They serve the greater Austin area.
+const SYSTEM_PROMPT = `You are a content writer for Cold is on the Right Plumbing & Air (CIOTR), a licensed plumbing and HVAC company based in Austin, TX. They serve the greater Austin area.
 
 Company facts:
 - Licensed and insured plumbers and HVAC technicians with decades of experience
@@ -210,6 +303,8 @@ Company facts:
 - Serve Austin and surrounding communities including Bee Cave, Cedar Park, Dripping Springs, Georgetown, Lakeway, Leander, Pflugerville, Round Rock, Spicewood, Steiner Ranch, and Westlake
 - Phone: (512) 271-2172
 - Brand voice: direct, local, trustworthy, conversational but professional — NOT corporate, NOT generic
+
+Business name rule: The company name is ALWAYS written as "Cold is on the Right Plumbing & Air" — only the words "Cold" and "Right" are capitalized, every other word is lowercase. Never write it as "Cold Is On The Right", "Cold Is On the Right", "cold is on the right", or any other capitalization variation. When shortening the name, always use "Cold is on the Right" (capital C, lowercase i, lowercase o, lowercase t, capital R). This rule is absolute — apply it to every field you generate without exception.
 
 Your job is to write genuinely unique location-specific content. Do NOT just swap city names into Austin copy. Use the location context to write content that actually speaks to what makes that community different — the home ages, property types, local concerns, neighborhood character.
 
@@ -233,7 +328,7 @@ function buildPrompt(location, pageType, reference) {
 REQUIRED fields (must not be empty):
 - "name": "${serviceName} in ${location}, TX"
 - "slug": "${pageType}"
-- "meta-title": "[Service] in ${location}, TX | Cold Is On the Right" (under 60 chars)
+- "meta-title": "[Service] in ${location}, TX | Cold is on the Right" (under 60 chars)
 - "meta-description": compelling meta description, 145-160 chars, includes ${location} and primary keyword
 - "bottom-cta-heading": short punchy CTA headline (plain text, e.g. "Reliable Plumbing in ${location}. Call Today.")
 - "hero-copy": <h1>${serviceName} in ${location}, TX</h1> then a location-flavored tagline in <h4> (bold subheading, NOT a <p>), then 2-3 sentence body paragraph in <p>
@@ -388,13 +483,16 @@ async function pushToWebflow(fieldData, pageType, location, existingItemId = nul
     }
   }
 
-  // Add image fields from image map
-  const imgs = imageMap[pageType];
-  if (imgs) {
-    if (imgs.hero)     webflowFields['hero-image']             = { url: imgs.hero,     alt: fieldData['name'] || '' };
-    if (imgs.signs)    webflowFields['signs-section-image']    = { url: imgs.signs,    alt: `Signs you need ${fieldData['name'] || ''}` };
-    if (imgs.benefits) webflowFields['benefits-section-image'] = { url: imgs.benefits, alt: `Benefits of ${fieldData['name'] || ''}` };
-  }
+  // Add image fields: folder-based random selection (with static map as fallback)
+  const dynamicImgs = await getImagesForPageType(pageType).catch(() => null);
+  const staticImgs  = imageMap[pageType];
+  const heroUrl     = dynamicImgs?.hero     || staticImgs?.hero     || null;
+  const signsUrl    = dynamicImgs?.signs    || staticImgs?.signs    || null;
+  const beneUrl     = dynamicImgs?.benefits || staticImgs?.benefits || null;
+  const pageName    = fieldData['name'] || '';
+  if (heroUrl)  webflowFields['hero-image']             = { url: heroUrl,  alt: pageName };
+  if (signsUrl) webflowFields['signs-section-image']    = { url: signsUrl, alt: `Signs you need ${pageName}` };
+  if (beneUrl)  webflowFields['benefits-section-image'] = { url: beneUrl,  alt: `Benefits of ${pageName}` };
 
   // City expertise image (unique-section-image) from city image map
   const cityImg = cityImageMap[fieldData['_location']];
@@ -478,7 +576,13 @@ app.post('/api/generate', async (req, res) => {
 
   try {
     const { generated, hasReference } = await generateContent(location, pageType);
-    const images = imageMap[pageType] || { hero: null, signs: null, benefits: null };
+    const dynamicImgs = await getImagesForPageType(pageType).catch(() => null);
+    const staticImgs  = imageMap[pageType] || {};
+    const images = {
+      hero:     dynamicImgs?.hero     || staticImgs.hero     || null,
+      signs:    dynamicImgs?.signs    || staticImgs.signs    || null,
+      benefits: dynamicImgs?.benefits || staticImgs.benefits || null,
+    };
     const cityImage = cityImageMap[location] || null;
     res.json({ success: true, content: generated, hasReference, images, cityImage });
   } catch (err) {

@@ -1,0 +1,107 @@
+{
+  "folders": {
+    "hvac": {
+      "hero":     "6a10854928251862fe5b8212",
+      "signs":    "6a1085228858fc750fd353e5",
+      "benefits": "6a1087fda7234b4796f34c3f"
+    },
+    "heating": {
+      "hero":     "6a1086942f120f5a55d73ce8",
+      "signs":    "6a10852dfab6a891ee4a4ded",
+      "benefits": "6a10880951dbfd79dc776827"
+    },
+    "plumbing": {
+      "hero":     "6a108541af37d2668ab5eb76",
+      "signs":    "6a0e0ecd953610f282a88886",
+      "benefits": "6a1087e2a7234b4796f33845"
+    },
+    "drain-sewer": {
+      "hero":     "6a1085d12804270a0e8f3a41",
+      "signs":    "6a1086ad54cfab1fcc7b329c",
+      "benefits": "6a1087e975b48dead92b9bb7"
+    },
+    "water-quality": {
+      "hero":     "6a10861051dbfd79dc762034",
+      "signs":    "6a10870ff1ed5a68248482a5",
+      "benefits": "6a1087f7620be82d2aab2d83"
+    },
+    "water-heaters": {
+      "hero":     "6a109f836d813b7e01b376e6",
+      "signs":    "6a108704e9df785df5d51d30",
+      "benefits": "6a1087e2a7234b4796f33845"
+    },
+    "commercial-plumbing": {
+      "hero":     "6a1085c9411acfd74cc92593",
+      "signs":    "6a10a63b24cde7fe04e53ec6",
+      "benefits": "6a1087e2a7234b4796f33845"
+    },
+    "garabage-disposal": {
+      "hero":     "6a10863df7692db2d9d52e3c",
+      "signs":    "6a10a63c5650e4a135898fe0",
+      "benefits": "6a1087e2a7234b4796f33845"
+    },
+    "hvac-maintenance": {
+      "hero":     "6a10866aea93102e22f417b0",
+      "signs":    "6a10a63c150fc8fd162f073f",
+      "benefits": "6a10a63d5da55d0ce39f3442"
+    },
+    "commercial-ac": {
+      "hero":     "6a108672fac0d3db4bb3d87d",
+      "signs":    "6a10a63b6818fe76af532afb",
+      "benefits": "6a10a63d24cde7fe04e53f54"
+    },
+    "ac": {
+      "hero":     "6a10867b5098d53c4d1904af",
+      "signs":    "6a10a63b5da55d0ce39f3375",
+      "benefits": "6a10a63c5650e4a135898ff2"
+    },
+    "mini-splits": {
+      "hero":     "6a10868687fec6810311bb76",
+      "signs":    null,
+      "benefits": null
+    },
+    "heat-pump": {
+      "hero":     "6a10a63ed7105213eaf9490a",
+      "signs":    "6a10a63be5664b15685aa946",
+      "benefits": "6a108803b7835cc9be440807"
+    }
+  },
+  "pageTypes": {
+    "plumbing":                          "plumbing",
+    "plumbing-repairs":                  "plumbing",
+    "commercial-plumbing":               "commercial-plumbing",
+    "drain":                             "drain-sewer",
+    "sewer":                             "drain-sewer",
+    "emergency-plumbing":                "plumbing",
+    "whole-house-repiping":              "plumbing",
+    "leak-detection":                    "plumbing",
+    "water-softeners":                   "water-quality",
+    "garbage-disposal-services":         "garabage-disposal",
+    "gas-line-installation":             "plumbing",
+    "drain-cleaning":                    "drain-sewer",
+    "sewer-line-replacement":            "drain-sewer",
+    "slab-leak-detection":               "plumbing",
+    "water-filters":                     "water-quality",
+    "water-heaters":                     "water-heaters",
+    "tankless-water-heater-installation":"water-heaters",
+    "water-heater-installation":         "water-heaters",
+    "water-heater-repair":               "water-heaters",
+    "water-heater-replacement":          "water-heaters",
+    "hvac":                              "hvac",
+    "hvac-maintenance":                  "hvac-maintenance",
+    "hvac-repair":                       "hvac",
+    "hvac-replacement":                  "hvac",
+    "ac-repair":                         "ac",
+    "ac-installation":                   "ac",
+    "ac-replacement":                    "ac",
+    "commercial-ac-repair":              "commercial-ac",
+    "mini-splits":                       "mini-splits",
+    "heat-pump-installation":            "heat-pump",
+    "heat-pump-repair":                  "heat-pump",
+    "heat-pump-replacement":             "heat-pump",
+    "furnace-repair":                    "heating",
+    "furnace-replacement":               "heating",
+    "furnace-installation":              "heating",
+    "heating-repairs":                   "heating"
+  }
+}
