@@ -62,6 +62,7 @@ const FIELD_SECTIONS = [
       'faq-4-question', 'faq-4-answer',
       'faq-5-question', 'faq-5-answer',
       'faq-6-question', 'faq-6-answer',
+      'faq-schema',
     ],
   },
   {
@@ -202,6 +203,7 @@ async function loadFieldMeta() {
     'faq-4-question': 'FAQ 4 Question', 'faq-4-answer': 'FAQ 4 Answer',
     'faq-5-question': 'FAQ 5 Question', 'faq-5-answer': 'FAQ 5 Answer',
     'faq-6-question': 'FAQ 6 Question', 'faq-6-answer': 'FAQ 6 Answer',
+    'faq-schema': 'FAQ Schema (JSON-LD)',
     'bottom-cta-heading': 'Bottom CTA Heading',
     'hero-image': 'Hero Image',
     'signs-section-image': 'Signs Section Image',
