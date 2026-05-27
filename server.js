@@ -158,12 +158,9 @@ async function loadAssetCache() {
     const assets = result.assets || [];
 
     for (const asset of assets) {
-      // Webflow v2 REST uses `hostedUrl`; the MCP wrapper exposes `url` — handle both
       const url = asset.hostedUrl || asset.url;
-      // Folder ID may be a flat string (REST) or nested object (MCP wrapper)
-      const folderId = typeof asset.parentFolder === 'string'
-        ? asset.parentFolder
-        : (asset.assetParentFolderInfo && asset.assetParentFolderInfo.id) || null;
+      // Webflow v2 REST API returns folderId as a plain string field
+      const folderId = asset.folderId || null;
 
       if (url && folderId && watchedFolders.has(folderId)) {
         if (!folderIndex[folderId]) folderIndex[folderId] = [];
