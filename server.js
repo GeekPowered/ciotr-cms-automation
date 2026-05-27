@@ -602,6 +602,11 @@ app.post('/api/generate', async (req, res) => {
 
   try {
     const { generated, hasReference } = await generateContent(location, pageType);
+
+    // Build FAQ schema now so it appears in preview and is ready for push
+    const faqSchema = buildFaqSchema(generated);
+    if (faqSchema) generated['faq-schema'] = faqSchema;
+
     const dynamicImgs = await getImagesForPageType(pageType).catch(() => null);
     const staticImgs  = imageMap[pageType] || {};
     const images = {
