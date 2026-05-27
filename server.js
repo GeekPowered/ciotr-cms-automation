@@ -582,6 +582,33 @@ app.get('/api/config', (req, res) => {
   });
 });
 
+app.get('/api/image-debug', async (req, res) => {
+  // Force cache rebuild so we see fresh data
+  _assetCache = null;
+  _assetCacheExpiry = 0;
+
+  const siteId = process.env.WEBFLOW_SITE_ID;
+  // Peek at one raw asset to see actual field names
+  const raw = await webflowRequest('GET', `/v2/sites/${siteId}/assets?limit=3&offset=0`);
+  const sample = (raw.assets || []).map(a => ({
+    id: a.id,
+    name: a.displayName || a.name,
+    parentFolder: a.parentFolder,
+    assetFolderId: a.assetFolderId,
+    assetParentFolderInfo: a.assetParentFolderInfo,
+    hostedUrl: (a.hostedUrl || a.url || '').slice(0, 80),
+  }));
+
+  // Build full cache
+  const index = await loadAssetCache();
+  const summary = {};
+  for (const [folderId, urls] of Object.entries(index)) {
+    summary[folderId] = { count: urls.length, sample: urls[0]?.slice(0, 80) };
+  }
+
+  res.json({ rawSample: sample, folderCounts: summary, totalFolders: Object.keys(summary).length });
+});
+
 app.get('/api/existing-slugs', async (req, res) => {
   const items = await getExistingItems(req.query.location);
   res.json({ slugs: Object.keys(items), items });
