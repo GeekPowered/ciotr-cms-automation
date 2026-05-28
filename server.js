@@ -600,6 +600,62 @@ app.get('/api/image-debug', async (req, res) => {
   }
 });
 
+// Full folder audit — lists every image in every watched folder, grouped by category/slot
+app.get('/api/folder-audit', async (req, res) => {
+  try {
+    const siteId = process.env.WEBFLOW_SITE_ID;
+
+    // Build reverse map: folderId → { category, slot }
+    const folderMeta = {};
+    for (const [cat, slots] of Object.entries(folderMapData.folders)) {
+      for (const [slot, fid] of Object.entries(slots)) {
+        if (fid) folderMeta[fid] = { category: cat, slot };
+      }
+    }
+    const watchedFolders = new Set(Object.keys(folderMeta));
+
+    const folderContents = {}; // folderId → [{ name, url }]
+    for (const fid of watchedFolders) folderContents[fid] = [];
+
+    const limit = 100;
+    let offset = 0;
+    let hasMore = true;
+    let total = 0;
+
+    while (hasMore) {
+      const result = await webflowRequest('GET', `/v2/sites/${siteId}/assets?limit=${limit}&offset=${offset}`);
+      const assets = result.assets || [];
+      total = result.total || 0;
+
+      for (const asset of assets) {
+        const folderId = asset.folderId || null;
+        if (folderId && watchedFolders.has(folderId)) {
+          folderContents[folderId].push({
+            id: asset.id,
+            name: asset.displayName || asset.originalFileName || asset.id,
+            url: (asset.hostedUrl || asset.url || '').slice(0, 100),
+          });
+        }
+      }
+
+      offset += assets.length;
+      hasMore = assets.length === limit && offset < total;
+    }
+
+    // Shape output: grouped by category and slot
+    const report = {};
+    for (const [fid, images] of Object.entries(folderContents)) {
+      const { category, slot } = folderMeta[fid];
+      if (!report[category]) report[category] = {};
+      report[category][slot] = { folderId: fid, count: images.length, images: images.map(i => i.name) };
+    }
+
+    res.json({ totalAssetsFetched: offset, report });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.get('/api/existing-slugs', async (req, res) => {
   const items = await getExistingItems(req.query.location);
   res.json({ slugs: Object.keys(items), items });
