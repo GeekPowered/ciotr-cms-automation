@@ -8,7 +8,7 @@
     "heating": {
       "hero":     "6a1086942f120f5a55d73ce8",
       "signs":    "6a10852dfab6a891ee4a4ded",
-      "benefits": "6a1087fda7234b4796f34c3f"
+      "benefits": "6a10880951dbfd79dc776827"
     },
     "plumbing": {
       "hero":     "6a108541af37d2668ab5eb76",
@@ -33,12 +33,12 @@
     "commercial-plumbing": {
       "hero":     "6a1085c9411acfd74cc92593",
       "signs":    "6a10a63b24cde7fe04e53ec6",
-      "benefits": "6a1087e2a7234b4796f33845"
+      "benefits": "6a10a63d35e6f35bfaff5909"
     },
     "garabage-disposal": {
       "hero":     "6a10863df7692db2d9d52e3c",
       "signs":    "6a10a63c5650e4a135898fe0",
-      "benefits": "6a1087e2a7234b4796f33845"
+      "benefits": "6a10a63ee5b5788dbf7c6b67"
     },
     "hvac-maintenance": {
       "hero":     "6a10866aea93102e22f417b0",
@@ -57,8 +57,8 @@
     },
     "mini-splits": {
       "hero":     "6a10868687fec6810311bb76",
-      "signs":    "6a1085228858fc750fd353e5",
-      "benefits": "6a1087fda7234b4796f34c3f"
+      "signs":    null,
+      "benefits": null
     },
     "heat-pump": {
       "hero":     "6a10a63ed7105213eaf9490a",
@@ -88,17 +88,17 @@
     "water-heater-repair":               "water-heaters",
     "water-heater-replacement":          "water-heaters",
     "hvac":                              "hvac",
-    "hvac-maintenance":                  "hvac",
+    "hvac-maintenance":                  "hvac-maintenance",
     "hvac-repair":                       "hvac",
     "hvac-replacement":                  "hvac",
-    "ac-repair":                         "hvac",
-    "ac-installation":                   "hvac",
-    "ac-replacement":                    "hvac",
+    "ac-repair":                         "ac",
+    "ac-installation":                   "ac",
+    "ac-replacement":                    "ac",
     "commercial-ac-repair":              "commercial-ac",
     "mini-splits":                       "mini-splits",
-    "heat-pump-installation":            "heating",
-    "heat-pump-repair":                  "heating",
-    "heat-pump-replacement":             "heating",
+    "heat-pump-installation":            "heat-pump",
+    "heat-pump-repair":                  "heat-pump",
+    "heat-pump-replacement":             "heat-pump",
     "furnace-repair":                    "heating",
     "furnace-replacement":               "heating",
     "furnace-installation":              "heating",
