@@ -170,7 +170,9 @@ async function loadAssetCache() {
 
     const total = result.total || 0;
     offset += assets.length;
-    hasMore = assets.length === limit && offset < total;
+    // Keep paginating as long as we got a full page — Webflow sometimes returns
+    // total=0 even when more assets exist, so we can't rely on total alone.
+    hasMore = assets.length === limit && (total === 0 || offset < total);
   }
 
   _assetCache = folderIndex;
@@ -639,7 +641,7 @@ app.get('/api/folder-audit', async (req, res) => {
       }
 
       offset += assets.length;
-      hasMore = assets.length === limit && offset < total;
+      hasMore = assets.length === limit && (total === 0 || offset < total);
     }
 
     // Shape output: grouped by category and slot
