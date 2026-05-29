@@ -755,6 +755,7 @@ function getFieldStringValue(val) {
 
 function runFastChecks(item, locationSlug) {
   const fd = item.fieldData || {};
+  const slug = fd.slug || '';
   const issues = [];
 
   // ── businessName ────────────────────────────────────────────
