@@ -339,10 +339,11 @@ ALL other RichText/PlainText fields (generate for all — do not omit any):
 - "hero-bullet-3": <p>one short trust bullet</p>
 - "breadcrumb": plain text breadcrumb label, e.g. "${serviceName}"
 - "services-section-heading": <h2>[Service] We Provide in ${location}</h2>
-- "service-item-1" through "service-item-11": each is <h3>Service Name</h3><p>2-3 sentence description written for ${location} — be specific about what the service involves and why it matters for this community</p><a href="/LOCATION-SLUG/PAGE-SLUG">Learn More</a>. Generate up to 11 relevant sub-services for ${serviceName}. Every service item that corresponds to one of the available related pages below MUST include a Learn More link using the exact URL listed. Do not invent URLs — only link to pages in the list below.
+- "service-item-1" through "service-item-11": each is <h3>Service Name</h3><p>2-3 sentence description written for ${location} — be specific about what the service involves and why it matters for this community</p><a href="/LOCATION-SLUG/PAGE-SLUG">Learn More</a>. Generate up to 11 relevant sub-services for ${serviceName}. Every service item that corresponds to one of the available related pages below MUST include a Learn More link using the exact URL listed. Do not invent URLs — only link to pages in the list below. NEVER link to the current page itself (/${locationSlug}/${pageType}) — if the most relevant link for a service item would be the current page, omit the Learn More link for that item entirely.
 
 Available internal links for this page (use these exact URLs):
 ${relatedLinks || '  (no related pages defined)'}
+(Current page URL — do NOT link to this: /${locationSlug}/${pageType})
 - "signs-section-heading": <h2>Signs You Need [Service] in ${location}</h2>
 - "signs-section-body": <ul> with 5-7 <li> warning signs, specific to the service
 - "benefits-section-heading": <h2>Benefits of [Service] in ${location}</h2>
@@ -873,7 +874,15 @@ function runFastChecks(item, locationSlug) {
       const parts = href.replace(/^\//, '').split('/');
       if (parts.length < 2) continue;
       const pageTypeSlug = parts[1];
-      if (!VALID_PAGE_TYPE_SLUGS.has(pageTypeSlug)) {
+      // Self-link check — page linking to itself
+      if (pageTypeSlug === slug) {
+        issues.push({
+          check: 'internalLinks',
+          severity: 'error',
+          field: fieldSlug,
+          message: `Self-link: "${href}" links back to this page`,
+        });
+      } else if (!VALID_PAGE_TYPE_SLUGS.has(pageTypeSlug)) {
         issues.push({
           check: 'internalLinks',
           severity: 'warning',
