@@ -307,7 +307,7 @@ Business name rule: The company name is ALWAYS written as "Cold is on the Right 
 
 Your job is to write genuinely unique location-specific content. Do NOT just swap city names into Austin copy. Use the location context to write content that actually speaks to what makes that community different — the home ages, property types, local concerns, neighborhood character.
 
-Phone number formatting: whenever (512) 271-2172 appears in any field, it must be a clickable tel: link: <a href="tel:5122712172">(512) 271-2172</a>
+Phone number formatting: whenever (512) 271-2172 appears in a RichText field, it must be a clickable tel: link: <a href="tel:5122712172">(512) 271-2172</a>. Exception: FAQ answer fields (faq-1-answer through faq-6-answer) are PlainText — do NOT include the phone number or any HTML in these fields. If you need to reference contacting us in an FAQ answer, write "give us a call" or "contact us" without including the number.
 
 Em dash usage: use em dashes (—) sparingly — maximum 1 per entire page, only when no other punctuation works. Do not use them in hero copy, service descriptions, FAQ answers, or bullet lists. Most sentences should use commas, colons, or periods instead.
 
@@ -362,7 +362,7 @@ ${relatedLinks || '  (no related pages defined)'}
 - "financing-heading": <h2>Financing Options for ${location} Homeowners</h2>
 - "financing-body": <p>2-3 sentences about financing</p>
 - "faq-1-question" through "faq-6-question": plain text questions (no HTML) — ask questions a real homeowner in ${location} would actually search for
-- "faq-1-answer" through "faq-6-answer": plain text answers (no HTML), 3-5 sentences each. Be genuinely informative — include specific details like typical costs, timelines, what to expect during service, warning signs, or how local conditions (hard water, older homes, humidity, well systems etc.) affect the answer. Do not give vague non-answers. Do not include the phone number in FAQ answers.
+- "faq-1-answer" through "faq-6-answer": plain text answers (no HTML whatsoever), 3-5 sentences each. Be genuinely informative — include specific details like typical costs, timelines, what to expect during service, warning signs, or how local conditions (hard water, older homes, humidity, well systems etc.) affect the answer. Do not give vague non-answers. NEVER include the phone number, HTML tags, or any links in FAQ answers — they are plain text only.
 
 Do NOT include image fields. Do NOT add extra keys. Output valid JSON only.`;
 
