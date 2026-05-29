@@ -468,27 +468,6 @@ function webflowRequest(method, endpoint, body) {
   });
 }
 
-function buildFaqSchema(fieldData) {
-  const entities = [];
-  for (let i = 1; i <= 6; i++) {
-    const q = fieldData[`faq-${i}-question`];
-    const a = fieldData[`faq-${i}-answer`];
-    if (q && a) {
-      entities.push({
-        '@type': 'Question',
-        'name': q,
-        'acceptedAnswer': { '@type': 'Answer', 'text': a },
-      });
-    }
-  }
-  if (entities.length === 0) return null;
-  const json = JSON.stringify({
-    '@context': 'https://schema.org',
-    '@type': 'FAQPage',
-    'mainEntity': entities,
-  });
-  return `<script type="application/ld+json">${json}</script>`;
-}
 
 async function pushToWebflow(fieldData, pageType, location, existingItemId = null) {
   const collectionId = getCollectionId(location);
@@ -520,10 +499,6 @@ async function pushToWebflow(fieldData, pageType, location, existingItemId = nul
   if (cityImg) {
     webflowFields['unique-section-image'] = { url: cityImg, alt: `${fieldData['_location']} homes` };
   }
-
-  // FAQ JSON-LD schema — built server-side from Q&A fields
-  const faqSchema = buildFaqSchema(fieldData);
-  if (faqSchema) webflowFields['faq-schema'] = faqSchema;
 
   // If we already know the existing item ID, go straight to PATCH
   if (existingItemId) {
@@ -678,10 +653,6 @@ app.post('/api/generate', async (req, res) => {
 
   try {
     const { generated, hasReference } = await generateContent(location, pageType);
-
-    // Build FAQ schema now so it appears in preview and is ready for push
-    const faqSchema = buildFaqSchema(generated);
-    if (faqSchema) generated['faq-schema'] = faqSchema;
 
     const dynamicImgs = await getImagesForPageType(pageType).catch(() => null);
     const staticImgs  = imageMap[pageType] || {};
