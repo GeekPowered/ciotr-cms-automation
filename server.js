@@ -861,22 +861,6 @@ function runFastChecks(item, locationSlug) {
     }
   }
 
-  // ── faqCount ─────────────────────────────────────────────────
-  let faqPairsPopulated = 0;
-  for (let i = 1; i <= 6; i++) {
-    const q = getFieldStringValue(fd[`faq-${i}-question`]);
-    const a = getFieldStringValue(fd[`faq-${i}-answer`]);
-    if (q && q.trim() && a && a.trim()) faqPairsPopulated++;
-  }
-  if (faqPairsPopulated < 4) {
-    issues.push({
-      check: 'faqCount',
-      severity: 'warning',
-      field: 'faq',
-      message: `Only ${faqPairsPopulated} complete FAQ pair(s) (minimum 4 recommended)`,
-    });
-  }
-
   // ── internalLinks ─────────────────────────────────────────────
   const hrefRE = /href="(\/[^"]+)"/g;
   for (const fieldSlug of RICH_TEXT_FIELDS_QA) {
@@ -923,7 +907,7 @@ app.get('/api/qa-run', async (req, res) => {
     const checks = [
       'businessName', 'plainTextHtml', 'ahrefTypo',
       'metaTitleLength', 'metaDescLength', 'missingImages',
-      'emptyRequired', 'faqCount', 'internalLinks',
+      'emptyRequired', 'internalLinks',
     ];
 
     const results = items.map(item => {

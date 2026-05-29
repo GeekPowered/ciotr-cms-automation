@@ -918,7 +918,6 @@ const QA_CHECKS = [
   { key: 'metaDescLength', label: 'MetaDesc',   title: 'Meta description length (130-165 chars)' },
   { key: 'missingImages',  label: 'Images',     title: 'Missing hero/signs/benefits images' },
   { key: 'emptyRequired',  label: 'Required',   title: 'Empty required fields' },
-  { key: 'faqCount',       label: 'FAQs',       title: 'FAQ count (min 4 complete pairs)' },
   { key: 'internalLinks',  label: 'Links',      title: 'Internal link validation' },
 ];
 
