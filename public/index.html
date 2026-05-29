@@ -45,6 +45,9 @@
           <button id="batch-btn" class="btn btn--secondary" disabled>
             ⊞ All Pages
           </button>
+          <button id="qa-btn" class="btn btn--secondary" disabled>
+            ✓ QA
+          </button>
         </div>
       </div>
     </div>
@@ -115,6 +118,25 @@
               <div class="empty-title">Select a page from the list to preview</div>
             </div>
           </div>
+        </div>
+
+      </div>
+
+      <!-- QA panel -->
+      <div id="qa-panel" class="qa-panel hidden">
+
+        <div class="qa-header">
+          <div class="qa-header-left">
+            <div class="qa-title" id="qa-title">QA Results</div>
+            <div class="qa-summary-bar" id="qa-summary-bar"></div>
+          </div>
+          <div class="qa-header-right">
+            <button id="qa-export-btn" class="btn btn--secondary hidden">↓ Export CSV</button>
+          </div>
+        </div>
+
+        <div class="qa-table-wrap" id="qa-table-wrap">
+          <!-- rows injected by JS -->
         </div>
 
       </div>

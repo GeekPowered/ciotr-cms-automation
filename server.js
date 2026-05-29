@@ -707,6 +707,395 @@ app.post('/api/push', async (req, res) => {
   }
 });
 
+// ─── QA Tool ─────────────────────────────────────────────────────────────────
+
+const PLAIN_TEXT_FIELDS = new Set([
+  'name', 'slug', 'breadcrumb', 'meta-title', 'meta-description', 'bottom-cta-heading',
+  'faq-1-question', 'faq-1-answer', 'faq-2-question', 'faq-2-answer',
+  'faq-3-question', 'faq-3-answer', 'faq-4-question', 'faq-4-answer',
+  'faq-5-question', 'faq-5-answer', 'faq-6-question', 'faq-6-answer',
+]);
+
+const REQUIRED_FIELDS = ['name', 'slug', 'meta-title', 'meta-description', 'hero-copy', 'about-section'];
+const IMAGE_FIELDS = ['hero-image', 'signs-section-image', 'benefits-section-image'];
+const RICH_TEXT_FIELDS_QA = [
+  'hero-copy', 'hero-bullet-1', 'hero-bullet-2', 'hero-bullet-3',
+  'about-section', 'services-section-heading',
+  'service-item-1', 'service-item-2', 'service-item-3', 'service-item-4',
+  'service-item-5', 'service-item-6', 'service-item-7', 'service-item-8',
+  'service-item-9', 'service-item-10', 'service-item-11',
+  'signs-section-heading', 'signs-section-body',
+  'benefits-section-heading', 'benefits-section-body',
+  'unique-section-body',
+  'process-section-heading', 'process-step-1', 'process-step-2', 'process-step-3',
+  'service-area',
+  'why-choose-us-heading', 'why-choose-us-intro',
+  'why-choose-us-card-1', 'why-choose-us-card-2', 'why-choose-us-card-3', 'why-choose-us-card-4',
+  'financing-heading', 'financing-body',
+];
+
+const WRONG_BUSINESS_NAME_PATTERNS = [
+  'Cold Is On The Right',
+  'Cold Is On the Right',
+  'cold is on the right',
+  'COLD IS ON THE RIGHT',
+  'Cold is on the right plumbing',
+  'Cold Is on the Right',
+];
+
+const VALID_PAGE_TYPE_SLUGS = new Set(Object.keys(PAGE_TYPE_NAMES));
+
+function getFieldStringValue(val) {
+  if (!val) return '';
+  if (typeof val === 'string') return val;
+  if (typeof val === 'object' && val.url) return val.url;
+  return String(val);
+}
+
+function runFastChecks(item, locationSlug) {
+  const fd = item.fieldData || {};
+  const issues = [];
+
+  // ── businessName ────────────────────────────────────────────
+  const allStringFields = [
+    ...RICH_TEXT_FIELDS_QA,
+    ...Array.from(PLAIN_TEXT_FIELDS),
+  ];
+  for (const fieldSlug of allStringFields) {
+    const val = getFieldStringValue(fd[fieldSlug]);
+    if (!val) continue;
+    for (const pattern of WRONG_BUSINESS_NAME_PATTERNS) {
+      if (val.includes(pattern)) {
+        issues.push({
+          check: 'businessName',
+          severity: 'error',
+          field: fieldSlug,
+          message: `Contains wrong capitalization: "${pattern}"`,
+        });
+        break; // one issue per field per check
+      }
+    }
+  }
+
+  // ── plainTextHtml ────────────────────────────────────────────
+  const HTML_TAG_RE = /<[a-zA-Z/][^>]{0,200}>/;
+  for (const fieldSlug of PLAIN_TEXT_FIELDS) {
+    const val = getFieldStringValue(fd[fieldSlug]);
+    if (!val) continue;
+    if (HTML_TAG_RE.test(val)) {
+      issues.push({
+        check: 'plainTextHtml',
+        severity: 'error',
+        field: fieldSlug,
+        message: `Plain-text field contains HTML tags`,
+      });
+    }
+  }
+
+  // ── ahrefTypo ─────────────────────────────────────────────────
+  // Flag any occurrence of the literal string "ahref" that is NOT part of a valid href= attribute.
+  // e.g. <a ahref="..."> or text saying "ahref" are both wrong.
+  const AHREF_RE = /(?<![a-zA-Z])ahref(?!\s*=\s*["'])/gi;
+  for (const fieldSlug of allStringFields) {
+    const val = getFieldStringValue(fd[fieldSlug]);
+    if (!val) continue;
+    AHREF_RE.lastIndex = 0;
+    if (AHREF_RE.test(val)) {
+      issues.push({
+        check: 'ahrefTypo',
+        severity: 'error',
+        field: fieldSlug,
+        message: `Contains "ahref" typo (should be href or <a href="...">)`,
+      });
+    }
+  }
+
+  // ── metaTitleLength ──────────────────────────────────────────
+  const metaTitle = getFieldStringValue(fd['meta-title']);
+  if (metaTitle && metaTitle.length > 60) {
+    issues.push({
+      check: 'metaTitleLength',
+      severity: 'warning',
+      field: 'meta-title',
+      message: `${metaTitle.length} chars (max 60)`,
+    });
+  }
+
+  // ── metaDescLength ───────────────────────────────────────────
+  const metaDesc = getFieldStringValue(fd['meta-description']);
+  if (metaDesc) {
+    if (metaDesc.length < 130 || metaDesc.length > 165) {
+      issues.push({
+        check: 'metaDescLength',
+        severity: 'warning',
+        field: 'meta-description',
+        message: `${metaDesc.length} chars (target 130–165)`,
+      });
+    }
+  }
+
+  // ── missingImages ─────────────────────────────────────────────
+  for (const imgField of IMAGE_FIELDS) {
+    const val = fd[imgField];
+    const isEmpty = !val || (typeof val === 'object' && !val.url) || val === '';
+    if (isEmpty) {
+      issues.push({
+        check: 'missingImages',
+        severity: 'error',
+        field: imgField,
+        message: `Image field is empty`,
+      });
+    }
+  }
+
+  // ── emptyRequired ─────────────────────────────────────────────
+  for (const reqField of REQUIRED_FIELDS) {
+    const val = getFieldStringValue(fd[reqField]);
+    if (!val || val.trim() === '') {
+      issues.push({
+        check: 'emptyRequired',
+        severity: 'error',
+        field: reqField,
+        message: `Required field is empty`,
+      });
+    }
+  }
+
+  // ── faqCount ─────────────────────────────────────────────────
+  let faqPairsPopulated = 0;
+  for (let i = 1; i <= 6; i++) {
+    const q = getFieldStringValue(fd[`faq-${i}-question`]);
+    const a = getFieldStringValue(fd[`faq-${i}-answer`]);
+    if (q && q.trim() && a && a.trim()) faqPairsPopulated++;
+  }
+  if (faqPairsPopulated < 4) {
+    issues.push({
+      check: 'faqCount',
+      severity: 'warning',
+      field: 'faq',
+      message: `Only ${faqPairsPopulated} complete FAQ pair(s) (minimum 4 recommended)`,
+    });
+  }
+
+  // ── internalLinks ─────────────────────────────────────────────
+  const hrefRE = /href="(\/[^"]+)"/g;
+  for (const fieldSlug of RICH_TEXT_FIELDS_QA) {
+    const val = getFieldStringValue(fd[fieldSlug]);
+    if (!val) continue;
+    let match;
+    hrefRE.lastIndex = 0;
+    while ((match = hrefRE.exec(val)) !== null) {
+      const href = match[1]; // e.g. /lakeway/plumbing
+      const parts = href.replace(/^\//, '').split('/');
+      if (parts.length < 2) continue;
+      const pageTypeSlug = parts[1];
+      if (!VALID_PAGE_TYPE_SLUGS.has(pageTypeSlug)) {
+        issues.push({
+          check: 'internalLinks',
+          severity: 'warning',
+          field: fieldSlug,
+          message: `Internal link "${href}" has unknown page type slug "${pageTypeSlug}"`,
+        });
+      }
+    }
+  }
+
+  return issues;
+}
+
+app.get('/api/qa-run', async (req, res) => {
+  const location = req.query.location;
+  if (!location || !LOCATIONS[location]) {
+    return res.status(400).json({ error: 'Valid ?location= required' });
+  }
+
+  try {
+    const collectionId = getCollectionId(location);
+    if (!collectionId) {
+      return res.status(400).json({ error: `No collection ID configured for location: ${location}` });
+    }
+
+    // Fetch all items for this location (up to 100)
+    const result = await webflowRequest('GET', `/v2/collections/${collectionId}/items?limit=100`);
+    const items = result.items || [];
+
+    const locationSlug = locationToSlug(location);
+    const checks = [
+      'businessName', 'plainTextHtml', 'ahrefTypo',
+      'metaTitleLength', 'metaDescLength', 'missingImages',
+      'emptyRequired', 'faqCount', 'internalLinks',
+    ];
+
+    const results = items.map(item => {
+      const fd = item.fieldData || {};
+      const slug = fd.slug || '';
+      const pageType = PAGE_TYPE_NAMES[slug] ? slug : (slug || 'unknown');
+      const issues = runFastChecks(item, locationSlug);
+      const errorCount = issues.filter(i => i.severity === 'error').length;
+      const warningCount = issues.filter(i => i.severity === 'warning').length;
+
+      // Extract image URLs for the image check endpoint
+      const images = IMAGE_FIELDS.map(f => {
+        const val = fd[f];
+        const url = val && typeof val === 'object' ? val.url : (typeof val === 'string' ? val : null);
+        if (!url) return null;
+        const slot = f === 'hero-image' ? 'hero' : f === 'signs-section-image' ? 'signs' : 'benefits';
+        return { slot, url };
+      }).filter(Boolean);
+
+      // Trim fieldData to just the fields needed for AI check (to keep payload lean)
+      const aiFields = {
+        'hero-copy': fd['hero-copy'] || '',
+        'about-section': fd['about-section'] || '',
+        'service-item-1': fd['service-item-1'] || '',
+      };
+
+      return {
+        itemId: item.id,
+        pageType,
+        name: fd.name || slug,
+        slug,
+        issues,
+        errorCount,
+        warningCount,
+        _images: images,
+        _aiFields: aiFields,
+      };
+    });
+
+    // Sort: errors first, then warnings, then passing
+    results.sort((a, b) => {
+      if (b.errorCount !== a.errorCount) return b.errorCount - a.errorCount;
+      return b.warningCount - a.warningCount;
+    });
+
+    res.json({
+      location,
+      totalItems: items.length,
+      checks,
+      results,
+    });
+  } catch (err) {
+    console.error('QA run error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/qa-ai-check', async (req, res) => {
+  const { item, location, pageType } = req.body;
+  if (!item || !location || !pageType) {
+    return res.status(400).json({ error: 'item, location, and pageType are required' });
+  }
+
+  // item may be { fieldData: {...} } or directly the fields object (_aiFields)
+  const fd = item.fieldData || item;
+  const heroCopy = fd['hero-copy'] || '';
+  const aboutSection = fd['about-section'] || '';
+  const serviceItem1 = fd['service-item-1'] || '';
+  const pageTypeName = PAGE_TYPE_NAMES[pageType] || pageType;
+
+  const prompt = `Review this CMS content for a ${pageTypeName} page in ${location}, TX. Flag any issues you find.
+
+HERO COPY:
+${heroCopy.replace(/<[^>]+>/g, ' ').trim().slice(0, 800)}
+
+ABOUT SECTION:
+${aboutSection.replace(/<[^>]+>/g, ' ').trim().slice(0, 800)}
+
+SERVICE ITEM 1:
+${serviceItem1.replace(/<[^>]+>/g, ' ').trim().slice(0, 400)}
+
+Check for:
+(1) Any wrong business name capitalization — correct form is "Cold is on the Right Plumbing & Air" or "Cold is on the Right" (only 'Cold' and 'Right' capitalized). Flag any deviation.
+(2) Any content that seems generic/not location-specific (could be copy-pasted for any city).
+(3) Any awkward phrasing, grammatical errors, or obvious content issues.
+(4) Any phone numbers appearing as plain text without a tel: link in rich text fields.
+
+Respond with ONLY valid JSON in this exact shape:
+{"issues":[{"field":"string","severity":"error|warning","message":"string"}],"score":1-10,"summary":"string"}
+
+Score 1-10 where 10 = excellent, location-specific, error-free content. Be strict — flag anything suspicious.`;
+
+  try {
+    const message = await anthropic.messages.create({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 1024,
+      messages: [{ role: 'user', content: prompt }],
+    });
+
+    const raw = message.content[0].text;
+    let parsed;
+    try {
+      parsed = extractJson(raw);
+    } catch {
+      parsed = { issues: [], score: null, summary: raw.slice(0, 300) };
+    }
+
+    res.json(parsed);
+  } catch (err) {
+    console.error('QA AI check error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/qa-image-check', async (req, res) => {
+  const { imageUrl, slot, pageType } = req.body;
+  if (!imageUrl || !slot || !pageType) {
+    return res.status(400).json({ error: 'imageUrl, slot, and pageType are required' });
+  }
+
+  const pageTypeName = PAGE_TYPE_NAMES[pageType] || pageType;
+  const slotDescriptions = {
+    hero: 'hero banner (main image at top of page)',
+    signs: 'signs/symptoms section (illustrates problems or warning signs)',
+    benefits: 'benefits section (illustrates positive outcomes or happy customers)',
+  };
+  const slotDesc = slotDescriptions[slot] || slot;
+
+  const prompt = `You are reviewing an image for a plumbing & HVAC company website. This image is being used as the ${slotDesc} on a ${pageTypeName} service page for Cold is on the Right Plumbing & Air, a professional plumbing and HVAC company serving the Austin, TX area.
+
+Is this image appropriate for this use?
+
+Consider:
+- Does it match the service type (plumbing/HVAC)?
+- Does it fit the slot purpose (${slotDesc})?
+- Is it professional and suitable for a home services company website?
+- Any obvious issues (wrong industry, inappropriate content, very low quality)?
+
+Respond with ONLY valid JSON:
+{"appropriate":true|false,"confidence":"high|medium|low","issue":null|"brief description of problem"}`;
+
+  try {
+    const message = await anthropic.messages.create({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 256,
+      messages: [{
+        role: 'user',
+        content: [
+          {
+            type: 'image',
+            source: { type: 'url', url: imageUrl },
+          },
+          { type: 'text', text: prompt },
+        ],
+      }],
+    });
+
+    const raw = message.content[0].text;
+    let parsed;
+    try {
+      parsed = extractJson(raw);
+    } catch {
+      parsed = { appropriate: null, confidence: 'low', issue: 'Could not parse response: ' + raw.slice(0, 200) };
+    }
+
+    res.json(parsed);
+  } catch (err) {
+    console.error('QA image check error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ─── Start ───────────────────────────────────────────────────────────────────
 
 // Export for Vercel serverless — also listen when run directly (local dev)

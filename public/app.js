@@ -224,10 +224,12 @@ function wireEvents() {
   const ptSel = document.getElementById('pagetype-select');
   const genBtn = document.getElementById('generate-btn');
   const batchBtn = document.getElementById('batch-btn');
+  const qaBtn = document.getElementById('qa-btn');
 
   function updateButtons() {
     genBtn.disabled = !locSel.value || !ptSel.value;
     batchBtn.disabled = !locSel.value;
+    qaBtn.disabled = !locSel.value;
   }
 
   locSel.addEventListener('change', () => {
@@ -235,6 +237,11 @@ function wireEvents() {
     loadExistingSlugs(locSel.value);
   });
   ptSel.addEventListener('change', updateButtons);
+
+  qaBtn.addEventListener('click', () => {
+    const loc = locSel.value;
+    if (loc) runQA(loc);
+  });
 
   genBtn.addEventListener('click', () => {
     currentLocation = locSel.value;
@@ -265,7 +272,7 @@ function wireEvents() {
 
 /* ── State helpers ────────────────────────────────────────── */
 function showState(state) {
-  ['empty-state', 'loading-state', 'preview-panel', 'success-state', 'batch-panel'].forEach(id => {
+  ['empty-state', 'loading-state', 'preview-panel', 'success-state', 'batch-panel', 'qa-panel'].forEach(id => {
     document.getElementById(id).classList.add('hidden');
   });
   if (state === 'empty')   document.getElementById('empty-state').classList.remove('hidden');
@@ -273,6 +280,7 @@ function showState(state) {
   else if (state === 'preview')  document.getElementById('preview-panel').classList.remove('hidden');
   else if (state === 'success')  document.getElementById('success-state').classList.remove('hidden');
   else if (state === 'batch')    document.getElementById('batch-panel').classList.remove('hidden');
+  else if (state === 'qa')       document.getElementById('qa-panel').classList.remove('hidden');
 }
 
 function showError(msg) {
@@ -897,6 +905,391 @@ function markSavedDropdownOptions() {
       }
     }
   } catch (_) {}
+}
+
+/* ── QA Tool ──────────────────────────────────────────────── */
+
+// QA check names displayed in column headers
+const QA_CHECKS = [
+  { key: 'businessName',   label: 'BizName',   title: 'Business name capitalization' },
+  { key: 'plainTextHtml',  label: 'HTML',       title: 'HTML in plain-text fields' },
+  { key: 'ahrefTypo',      label: 'ahref',      title: 'ahref typo (should be href)' },
+  { key: 'metaTitleLength',label: 'MetaTitle',  title: 'Meta title length (max 60 chars)' },
+  { key: 'metaDescLength', label: 'MetaDesc',   title: 'Meta description length (130-165 chars)' },
+  { key: 'missingImages',  label: 'Images',     title: 'Missing hero/signs/benefits images' },
+  { key: 'emptyRequired',  label: 'Required',   title: 'Empty required fields' },
+  { key: 'faqCount',       label: 'FAQs',       title: 'FAQ count (min 4 complete pairs)' },
+  { key: 'internalLinks',  label: 'Links',      title: 'Internal link validation' },
+];
+
+let qaResults = null;
+let qaLocation = null;
+
+async function runQA(location) {
+  qaLocation = location;
+  showState('loading');
+  document.getElementById('loading-sub').textContent = 'Fetching all CMS items and running checks…';
+  document.getElementById('loading-sub').style.color = '';
+  document.querySelector('.loading-title').textContent = 'Running QA…';
+
+  try {
+    const res = await fetch(`/api/qa-run?location=${encodeURIComponent(location)}`);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'QA run failed');
+
+    qaResults = data;
+    renderQAPanel(data);
+    showState('qa');
+  } catch (err) {
+    showState('loading');
+    showError(err.message);
+  }
+}
+
+function renderQAPanel(data) {
+  document.getElementById('qa-title').textContent = `QA — ${data.location} (${data.totalItems} pages)`;
+
+  // Summary bar
+  const totalErrors = data.results.reduce((s, r) => s + r.errorCount, 0);
+  const totalWarnings = data.results.reduce((s, r) => s + r.warningCount, 0);
+  const passingCount = data.results.filter(r => r.errorCount === 0 && r.warningCount === 0).length;
+
+  const summaryBar = document.getElementById('qa-summary-bar');
+  summaryBar.innerHTML = `
+    <span class="qa-badge qa-badge--error">${totalErrors} error${totalErrors !== 1 ? 's' : ''}</span>
+    <span class="qa-badge qa-badge--warning">${totalWarnings} warning${totalWarnings !== 1 ? 's' : ''}</span>
+    <span class="qa-badge qa-badge--pass">${passingCount} passing</span>
+  `;
+
+  // Show export button
+  document.getElementById('qa-export-btn').classList.remove('hidden');
+
+  // Build table
+  const wrap = document.getElementById('qa-table-wrap');
+  wrap.innerHTML = '';
+
+  const table = document.createElement('table');
+  table.className = 'qa-table';
+
+  // Header row
+  const thead = document.createElement('thead');
+  const headerRow = document.createElement('tr');
+  headerRow.innerHTML = `<th class="qa-th-name">Page</th>` +
+    QA_CHECKS.map(c => `<th class="qa-th-check" title="${c.title}">${c.label}</th>`).join('') +
+    `<th class="qa-th-actions">Actions</th>`;
+  thead.appendChild(headerRow);
+  table.appendChild(thead);
+
+  const tbody = document.createElement('tbody');
+
+  data.results.forEach((row, rowIdx) => {
+    // Group issues by check key
+    const byCheck = {};
+    for (const check of QA_CHECKS) byCheck[check.key] = [];
+    for (const issue of row.issues) {
+      if (byCheck[issue.check]) byCheck[issue.check].push(issue);
+    }
+
+    const tr = document.createElement('tr');
+    tr.className = 'qa-row' + (row.errorCount > 0 ? ' qa-row--error' : row.warningCount > 0 ? ' qa-row--warning' : ' qa-row--pass');
+    tr.dataset.rowIdx = rowIdx;
+
+    // Page name cell
+    const nameTd = document.createElement('td');
+    nameTd.className = 'qa-td-name';
+    nameTd.innerHTML = `
+      <div class="qa-page-name">${escapeHtml(row.name)}</div>
+      <div class="qa-page-slug">${escapeHtml(row.slug)}</div>`;
+    tr.appendChild(nameTd);
+
+    // Check icon cells
+    for (const check of QA_CHECKS) {
+      const issues = byCheck[check.key];
+      const td = document.createElement('td');
+      td.className = 'qa-td-check';
+      if (issues.length === 0) {
+        td.innerHTML = '<span class="qa-icon qa-icon--pass" title="Pass">✓</span>';
+      } else {
+        const hasError = issues.some(i => i.severity === 'error');
+        td.innerHTML = `<span class="qa-icon ${hasError ? 'qa-icon--error' : 'qa-icon--warning'}" title="${escapeHtml(issues.map(i => i.message).join('; '))}">${hasError ? '✗' : '⚠'}</span>`;
+      }
+      tr.appendChild(td);
+    }
+
+    // Actions cell
+    const actionTd = document.createElement('td');
+    actionTd.className = 'qa-td-actions';
+    actionTd.innerHTML = `
+      <button class="qa-detail-btn btn btn--secondary" data-row="${rowIdx}" style="height:28px;padding:0 10px;font-size:11px;">Detail</button>
+      <button class="qa-ai-btn btn btn--secondary" data-row="${rowIdx}" style="height:28px;padding:0 10px;font-size:11px;">AI Check</button>
+      <button class="qa-img-btn btn btn--secondary" data-row="${rowIdx}" style="height:28px;padding:0 10px;font-size:11px;">Image Check</button>`;
+    tr.appendChild(actionTd);
+
+    tbody.appendChild(tr);
+
+    // Detail expand row (hidden by default)
+    const detailTr = document.createElement('tr');
+    detailTr.className = 'qa-detail-row hidden';
+    detailTr.dataset.detail = rowIdx;
+    const detailTd = document.createElement('td');
+    detailTd.colSpan = QA_CHECKS.length + 3;
+    detailTd.className = 'qa-detail-td';
+    detailTd.appendChild(buildDetailCell(row));
+    detailTr.appendChild(detailTd);
+    tbody.appendChild(detailTr);
+  });
+
+  table.appendChild(tbody);
+  wrap.appendChild(table);
+
+  // Wire detail toggles
+  wrap.querySelectorAll('.qa-detail-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = btn.dataset.row;
+      const detailRow = wrap.querySelector(`.qa-detail-row[data-detail="${idx}"]`);
+      if (detailRow) {
+        detailRow.classList.toggle('hidden');
+        btn.textContent = detailRow.classList.contains('hidden') ? 'Detail' : 'Hide';
+      }
+    });
+  });
+
+  // Wire AI check buttons
+  wrap.querySelectorAll('.qa-ai-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const idx = parseInt(btn.dataset.row);
+      const row = data.results[idx];
+      btn.disabled = true;
+      btn.textContent = '…';
+
+      try {
+        const res = await fetch('/api/qa-ai-check', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            item: row._aiFields || {},
+            location: data.location,
+            pageType: row.pageType,
+          }),
+        });
+        const aiData = await res.json();
+        if (!res.ok) throw new Error(aiData.error || 'AI check failed');
+
+        // Inject AI result below this row
+        injectAiResult(wrap, idx, aiData);
+        btn.textContent = 'AI ✓';
+      } catch (err) {
+        btn.disabled = false;
+        btn.textContent = 'AI Check';
+        alert('AI check failed: ' + err.message);
+      }
+    });
+  });
+
+  // Wire image check buttons
+  wrap.querySelectorAll('.qa-img-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const idx = parseInt(btn.dataset.row);
+      const row = data.results[idx];
+      btn.disabled = true;
+      btn.textContent = '…';
+
+      const imagesToCheck = row._images || [];
+      if (imagesToCheck.length === 0) {
+        injectImageResult(wrap, idx, []);
+        btn.textContent = 'No Images';
+        return;
+      }
+
+      try {
+        const checks = await Promise.all(imagesToCheck.map(async ({ slot, url }) => {
+          const res = await fetch('/api/qa-image-check', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ imageUrl: url, slot, pageType: row.pageType }),
+          });
+          const d = await res.json();
+          return { slot, url, ...d };
+        }));
+
+        injectImageResult(wrap, idx, checks);
+        btn.textContent = 'Img ✓';
+      } catch (err) {
+        btn.disabled = false;
+        btn.textContent = 'Image Check';
+        alert('Image check failed: ' + err.message);
+      }
+    });
+  });
+
+  // Export CSV
+  document.getElementById('qa-export-btn').onclick = () => exportQACSV(data);
+}
+
+function buildDetailCell(row) {
+  const div = document.createElement('div');
+  div.className = 'qa-detail-content';
+
+  if (row.issues.length === 0) {
+    div.innerHTML = '<span class="qa-detail-pass">No issues found — all checks passed.</span>';
+    return div;
+  }
+
+  const grouped = {};
+  for (const issue of row.issues) {
+    if (!grouped[issue.check]) grouped[issue.check] = [];
+    grouped[issue.check].push(issue);
+  }
+
+  for (const [checkKey, issues] of Object.entries(grouped)) {
+    const checkMeta = QA_CHECKS.find(c => c.key === checkKey);
+    const label = checkMeta ? checkMeta.title : checkKey;
+    const section = document.createElement('div');
+    section.className = 'qa-detail-group';
+    section.innerHTML = `<div class="qa-detail-group-label">${escapeHtml(label)}</div>`;
+
+    for (const issue of issues) {
+      const item = document.createElement('div');
+      item.className = `qa-detail-issue qa-detail-issue--${issue.severity}`;
+      item.innerHTML = `
+        <span class="qa-detail-severity">${issue.severity}</span>
+        <span class="qa-detail-field">${escapeHtml(issue.field)}</span>
+        <span class="qa-detail-msg">${escapeHtml(issue.message)}</span>`;
+      section.appendChild(item);
+    }
+    div.appendChild(section);
+  }
+
+  return div;
+}
+
+function injectAiResult(wrap, rowIdx, aiData) {
+  const id = `qa-ai-result-${rowIdx}`;
+  let el = document.getElementById(id);
+  if (!el) {
+    el = document.createElement('tr');
+    el.id = id;
+    el.className = 'qa-ai-result-row';
+    const td = document.createElement('td');
+    td.colSpan = QA_CHECKS.length + 3;
+    td.className = 'qa-detail-td';
+    el.appendChild(td);
+
+    // Insert after the detail row
+    const detailRow = wrap.querySelector(`.qa-detail-row[data-detail="${rowIdx}"]`);
+    if (detailRow && detailRow.nextSibling) {
+      detailRow.parentNode.insertBefore(el, detailRow.nextSibling);
+    } else {
+      wrap.querySelector('tbody').appendChild(el);
+    }
+  }
+
+  const td = el.querySelector('td');
+  const score = aiData.score != null ? aiData.score : '—';
+  const scoreColor = aiData.score >= 8 ? 'var(--green)' : aiData.score >= 5 ? 'var(--amber)' : 'var(--red)';
+  const issuesHtml = (aiData.issues || []).map(i =>
+    `<div class="qa-detail-issue qa-detail-issue--${i.severity}">
+      <span class="qa-detail-severity">${escapeHtml(i.severity)}</span>
+      <span class="qa-detail-field">${escapeHtml(i.field || '')}</span>
+      <span class="qa-detail-msg">${escapeHtml(i.message)}</span>
+    </div>`
+  ).join('');
+
+  td.innerHTML = `
+    <div class="qa-ai-result">
+      <div class="qa-ai-result-header">
+        <span class="qa-ai-label">AI Content Review</span>
+        <span class="qa-ai-score" style="color:${scoreColor}">Score: ${score}/10</span>
+      </div>
+      <div class="qa-ai-summary">${escapeHtml(aiData.summary || '')}</div>
+      ${issuesHtml.length ? `<div class="qa-detail-group" style="margin-top:8px;">${issuesHtml}</div>` : '<div class="qa-detail-pass" style="margin-top:6px;">No AI issues found.</div>'}
+    </div>`;
+}
+
+function injectImageResult(wrap, rowIdx, checks) {
+  const id = `qa-img-result-${rowIdx}`;
+  let el = document.getElementById(id);
+  if (!el) {
+    el = document.createElement('tr');
+    el.id = id;
+    el.className = 'qa-img-result-row';
+    const td = document.createElement('td');
+    td.colSpan = QA_CHECKS.length + 3;
+    td.className = 'qa-detail-td';
+    el.appendChild(td);
+
+    const aiResultRow = document.getElementById(`qa-ai-result-${rowIdx}`);
+    const detailRow = wrap.querySelector(`.qa-detail-row[data-detail="${rowIdx}"]`);
+    const insertAfter = aiResultRow || detailRow;
+    if (insertAfter && insertAfter.nextSibling) {
+      insertAfter.parentNode.insertBefore(el, insertAfter.nextSibling);
+    } else {
+      wrap.querySelector('tbody').appendChild(el);
+    }
+  }
+
+  const td = el.querySelector('td');
+  if (checks.length === 0) {
+    td.innerHTML = '<div class="qa-ai-result"><div class="qa-ai-label">Image Check</div><div class="qa-detail-pass">No images to check.</div></div>';
+    return;
+  }
+
+  const itemsHtml = checks.map(c => {
+    const ok = c.appropriate === true;
+    const icon = ok ? '<span style="color:var(--green)">✓</span>' : '<span style="color:var(--red)">✗</span>';
+    const conf = c.confidence ? ` (${c.confidence} confidence)` : '';
+    const issue = c.issue ? `<span class="qa-detail-msg"> — ${escapeHtml(c.issue)}</span>` : '';
+    return `<div class="qa-img-check-row">${icon} <strong>${escapeHtml(c.slot)}</strong>${conf}${issue}</div>`;
+  }).join('');
+
+  td.innerHTML = `<div class="qa-ai-result"><div class="qa-ai-label">Image Check</div>${itemsHtml}</div>`;
+}
+
+function exportQACSV(data) {
+  const checkKeys = QA_CHECKS.map(c => c.key);
+  const headers = ['Page Name', 'Slug', 'Errors', 'Warnings', ...QA_CHECKS.map(c => c.label), 'All Issues'];
+  const rows = data.results.map(row => {
+    const byCheck = {};
+    for (const c of QA_CHECKS) byCheck[c.key] = [];
+    for (const issue of row.issues) {
+      if (byCheck[issue.check]) byCheck[issue.check].push(issue);
+    }
+
+    const checkCols = QA_CHECKS.map(c => {
+      const issues = byCheck[c.key];
+      if (issues.length === 0) return 'pass';
+      const hasError = issues.some(i => i.severity === 'error');
+      return hasError ? 'error' : 'warning';
+    });
+
+    const allIssues = row.issues.map(i => `[${i.severity}] ${i.check}/${i.field}: ${i.message}`).join(' | ');
+
+    return [
+      row.name, row.slug, row.errorCount, row.warningCount,
+      ...checkCols, allIssues,
+    ];
+  });
+
+  const csvContent = [headers, ...rows]
+    .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+    .join('\n');
+
+  const blob = new Blob([csvContent], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `qa-${data.location.toLowerCase().replace(/\s+/g, '-')}-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 }
 
 /* ── Init ─────────────────────────────────────────────────── */
